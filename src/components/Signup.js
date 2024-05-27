@@ -9,7 +9,7 @@ const Signup = () => {
   const navigate = useNavigate();
 
   const apiUrls = {
-    spectateur: 'https://api.example.com/spectateur',
+    spectateur: 'http://localhost:8080/register/spectateur',
     participant: 'https://api.example.com/participant',
     controleur: 'https://api.example.com/controleur',
     organisateur: 'https://api.example.com/organisateur',
@@ -20,38 +20,41 @@ const Signup = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
     if (!role || !email || !password) {
       setError('All fields are required');
       return;
     }
 
     const apiUrl = apiUrls[role];
+    console.log('apiUrl:', apiUrl);
+    
+    const body = {
+      "nom": "test",
+      "prenom": "here",
+      "email": email,
+      "password": password,
+    };
+    console.log('body:', body);
+    console.log('apiUrl:', apiUrl);
 
-    try {
-      const response = await fetch(apiUrl, {
+    const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+            // Apply cors headers to bypass CORS issue
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
-      });
+        body: body,
+    }).catch((error) => {
+      console.error('error:', error);
+    });
 
-      if (!response.ok) {
-        throw new Error('Failed to create account');
-      }
-
-      const data = await response.json();
-      console.log('Account created:', data);
-
-      if (role === 'spectateur') {
-        navigate('/spectator-home');
-      } else {
-        navigate('/login');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      setError('Failed to create account');
+    if (response.ok) {
+      console.log('response:', response);
+      navigate('/login');
+    } else {
+      console.error('response:', response);
+      setError('An error occurred. Please try again later.');
     }
   };
 
