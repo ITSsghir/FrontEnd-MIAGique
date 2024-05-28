@@ -1,44 +1,35 @@
-import axios from 'axios';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  // eslint-disable-next-line
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { login, sessionID } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Redirect authenticated users to homepage
+    if (sessionID) {
+      navigate('/spectatorHome');
+    }
+  }, [sessionID, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Use axios for making the HTTP request
-      const response = await axios.post('http://localhost:8080/login', {
-        email: email,
-        password: password,
-      });
-
-      console.log(response);
-      
-      // Extract the sessionID from the response headers
-      const sessionID = response.headers['session-id'];
-      console.log(sessionID);
-
-      if (response.status !== 200) {
-        throw new Error('Authentication failed');
-      }
-      setIsLoggedIn(true); // Set authentication status to true
-      navigate('/spectatorHome'); // Redirect to authenticated route
+      await login(email, password);
+      navigate('/spectatorHome'); // Redirect to homepage after successful login
     } catch (error) {
-      console.error('Authentication error:', error);
-      // Handle authentication failure (e.g., display error message)
+      console.error('Login failed:', error.message);
+      // Handle login error (display error message, clear form fields, etc.)
     }
   };
 
   return (
     <div className="login-container">
       <h2>Login</h2>
-      <form>
+      <form onSubmit={handleSubmit}>
         <div>
           <label>Email:</label>
           <input 
@@ -57,7 +48,7 @@ const Login = () => {
             required 
           />
         </div>
-        <button type="submit" onClick={handleSubmit}>Login</button>
+        <button type="submit">Login</button>
       </form>
       <p>
         Don't have an account? <Link to="/signup">Create Profile</Link>

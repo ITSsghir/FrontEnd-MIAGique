@@ -1,9 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
 const SpectatorHome = () => {
   const navigate = useNavigate();
   const [message, setMessage] = useState('');
+
+  const { logout, sessionID } = useAuth();
+
+  useEffect(() => {
+    if (!sessionID) {
+      navigate('/login');
+    }
+  }, [sessionID, navigate]);
 
   const handleDeleteAccount = async () => {
     // Simuler un appel API pour supprimer le compte
@@ -21,6 +30,10 @@ const SpectatorHome = () => {
     }, 3000);
   };
 
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  }
   return (
     <div className="container">
       <h2>Welcome, Spectator</h2>
@@ -28,6 +41,7 @@ const SpectatorHome = () => {
       <button className="secondary" onClick={() => navigate('/events-list')}>Consulter le programme des épreuves</button>
       <button className="secondary" onClick={() => navigate('/tickets')}>Voir billets</button>
       <button className="danger" onClick={handleDeleteAccount}>Supprimer compte</button>
+      <button className="danger" onClick={handleLogout}>Logout</button>
     </div>
   );
 };
