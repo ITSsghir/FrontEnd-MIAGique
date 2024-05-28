@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // eslint-disable-next-line
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
 
@@ -37,7 +38,7 @@ const Login = () => {
   return (
     <div className="login-container">
       <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
+      <form>
         <div>
           <label>Email:</label>
           <input 
@@ -56,7 +57,7 @@ const Login = () => {
             required 
           />
         </div>
-        <button type="submit">Login</button>
+        <button type="submit" onClick={handleSubmit}>Login</button>
       </form>
       <p>
         Don't have an account? <Link to="/signup">Create Profile</Link>

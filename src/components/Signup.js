@@ -1,8 +1,11 @@
+import axios from 'axios';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Signup = () => {
   const [role, setRole] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -20,49 +23,39 @@ const Signup = () => {
   };
 
   const handleSubmit = async (e) => {
+    e.preventDefault();
     if (!role || !email || !password) {
       setError('All fields are required');
       return;
     }
 
-    const apiUrl = apiUrls[role];
-    console.log('apiUrl:', apiUrl);
-    
-    const body = {
-      "nom": "test",
-      "prenom": "here",
-      "email": email,
-      "password": password,
-    };
-    console.log('body:', body);
-    console.log('apiUrl:', apiUrl);
+    try {
+      const response = await axios.post(apiUrls[role], {
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        password: password,
+      });
 
-    const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-            // Apply cors headers to bypass CORS issue
-            'Access-Control-Allow-Origin': '*',
-            'Content-Type': 'application/json',
-        },
-        body: body,
-    }).catch((error) => {
-      console.error('error:', error);
-    });
+      console.log(response);
 
-    if (response.ok) {
-      console.log('response:', response);
+      if (response.status !== 200) {
+        throw new Error('Registration failed');
+      }
+
       navigate('/login');
-    } else {
-      console.error('response:', response);
-      setError('An error occurred. Please try again later.');
+
+    } catch (error) {
+      console.error('Registration error:', error);
+      setError('Registration failed');
     }
-  };
+  }
 
   return (
     <div className="signup-container">
       <h2>Sign Up</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleSubmit}>
+      <form>
         <div>
           <label>Role:</label>
           <select value={role} onChange={handleRoleChange} required>
@@ -74,6 +67,20 @@ const Signup = () => {
           </select>
         </div>
         <div>
+          <label>First Name:</label>
+          <input 
+            type="text" 
+            value={firstName} 
+            onChange={(e) => setFirstName(e.target.value)} 
+            required
+          />
+          <label>Last Name:</label>
+          <input 
+            type="text" 
+            value={lastName} 
+            onChange={(e) => setLastName(e.target.value)} 
+            required
+          />
           <label>Email:</label>
           <input 
             type="email" 
@@ -91,7 +98,7 @@ const Signup = () => {
             required 
           />
         </div>
-        <button type="submit">Create Account</button>
+        <button type="submit" onClick={handleSubmit}>Sign Up</button>
       </form>
     </div>
   );
