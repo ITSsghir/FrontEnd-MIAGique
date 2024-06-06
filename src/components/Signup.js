@@ -22,7 +22,7 @@ const Signup = () => {
 
   useEffect(() => {
     if (sessionID) {
-      navigate('/Home');
+      navigate('/');
     }
   }, [sessionID, navigate]);
 

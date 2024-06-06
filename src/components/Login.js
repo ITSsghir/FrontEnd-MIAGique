@@ -10,8 +10,8 @@ const Login = () => {
 
   useEffect(() => {
     // Redirect authenticated users to homepage
-    if (sessionID) {
-      navigate('/Home');
+    if (!sessionID) {
+      navigate('/login');
     }
   }, [navigate, sessionID]);
 
@@ -19,7 +19,7 @@ const Login = () => {
     e.preventDefault();
     try {
       await login(email, password);
-      navigate('/Home'); // Redirect to homepage after successful login
+      navigate('/'); // Redirect to homepage after successful login
     } catch (error) {
       console.error('Login failed:', error.message);
       // Handle login error (display error message, clear form fields, etc.)

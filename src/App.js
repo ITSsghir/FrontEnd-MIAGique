@@ -7,18 +7,20 @@ import EventsList from './components/EventsList';
 import Payment from './components/Payment';
 import Tickets from './components/Tickets';
 
+
 const App = () => {
+
   return (
     <Router>
       <div className="app-container">
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/Home" element={<Home />} />
+          <Route path="/" element={<Home />} />
           <Route path="/events-list" element={<EventsList />} />
           <Route path="/payment" element={<Payment />} />
           <Route path="/tickets" element={<Tickets />} />
-          <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Login />} />
         </Routes>
       </div>
     </Router>
