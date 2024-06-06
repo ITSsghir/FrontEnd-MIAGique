@@ -1,6 +1,7 @@
 import axios from 'axios';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
 const Signup = () => {
   const [role, setRole] = useState('');
@@ -10,6 +11,7 @@ const Signup = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { sessionID } = useAuth();
 
   const apiUrls = {
     spectateur: 'http://localhost:8080/register/spectateur',
@@ -17,6 +19,12 @@ const Signup = () => {
     controleur: 'https://api.example.com/controleur',
     organisateur: 'https://api.example.com/organisateur',
   };
+
+  useEffect(() => {
+    if (sessionID) {
+      navigate('/Home');
+    }
+  }, [sessionID, navigate]);
 
   const handleRoleChange = (e) => {
     setRole(e.target.value);
@@ -43,7 +51,7 @@ const Signup = () => {
         throw new Error('Registration failed');
       }
 
-      navigate('/login');
+      navigate('/');
 
     } catch (error) {
       console.error('Registration error:', error);

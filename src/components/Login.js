@@ -11,15 +11,15 @@ const Login = () => {
   useEffect(() => {
     // Redirect authenticated users to homepage
     if (sessionID) {
-      navigate('/spectatorHome');
+      navigate('/Home');
     }
-  }, [sessionID, navigate]);
+  }, [navigate, sessionID]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await login(email, password);
-      navigate('/spectatorHome'); // Redirect to homepage after successful login
+      navigate('/Home'); // Redirect to homepage after successful login
     } catch (error) {
       console.error('Login failed:', error.message);
       // Handle login error (display error message, clear form fields, etc.)
