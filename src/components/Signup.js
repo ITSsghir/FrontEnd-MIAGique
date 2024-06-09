@@ -11,20 +11,17 @@ const Signup = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { sessionID } = useAuth();
+  const { login } = useAuth();
 
-  const apiUrls = {
-    spectateur: 'http://localhost:8080/register/spectateur',
-    participant: 'https://api.example.com/participant',
-    controleur: 'https://api.example.com/controleur',
-    organisateur: 'https://api.example.com/organisateur',
-  };
+  const apiUrl = 'http://localhost:8080/register/' + role; 
 
   useEffect(() => {
-    if (sessionID) {
+    const localSessionID = localStorage.getItem('sessionID');
+    if (localSessionID) {
       navigate('/');
+      console.log('Already logged in');
     }
-  }, [sessionID, navigate]);
+  }, [navigate]);
 
   const handleRoleChange = (e) => {
     setRole(e.target.value);
@@ -32,13 +29,14 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('URL: ', apiUrl);
     if (!role || !email || !password) {
       setError('All fields are required');
       return;
     }
 
     try {
-      const response = await axios.post(apiUrls[role], {
+      const response = await axios.post(apiUrl, {
         firstName: firstName,
         lastName: lastName,
         email: email,
@@ -49,6 +47,14 @@ const Signup = () => {
 
       if (response.status !== 200) {
         throw new Error('Registration failed');
+      }
+
+      try {
+        await login(email, password);
+      } catch (error) {
+        console.error('Login failed:', error.message);
+        setError('Login failed');
+        return;
       }
 
       navigate('/');
