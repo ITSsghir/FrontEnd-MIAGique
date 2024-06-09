@@ -12,7 +12,6 @@ const App = () => {
 
   return (
     <Router>
-      <div className="app-container">
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
@@ -22,7 +21,6 @@ const App = () => {
           <Route path="/tickets" element={<Tickets />} />
           <Route path="/login" element={<Login />} />
         </Routes>
-      </div>
     </Router>
   );
 };
