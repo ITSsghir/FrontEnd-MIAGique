@@ -5,15 +5,17 @@ import { useAuth } from './AuthContext';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, sessionID } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
+    const localSessionID = localStorage.getItem('sessionID');
     // Redirect authenticated users to homepage
-    if (!sessionID) {
-      navigate('/login');
+    if (localSessionID) {
+      navigate('/');
+      console.log('Already logged in');
     }
-  }, [navigate, sessionID]);
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
