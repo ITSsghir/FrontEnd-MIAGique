@@ -16,6 +16,9 @@ export const AuthProvider = ({ children }) => {
   const [sessionID, setSessionID] = useState(null);
   const [epreuves, setEpreuves] = useState([]);
   const [billets, setBillets] = useState([]);
+  const [inscriptions, setInscriptions] = useState([]);
+  const [delegation, setDelegation] = useState([]);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -44,6 +47,11 @@ export const AuthProvider = ({ children }) => {
     if (sessionId) {
       getEpreuves();
       getBillets();
+      console.log('User role:', userRole);
+      console.log('User ID:', userId);
+      if (userRole === 'participant') {
+        getUser(userId, userRole);
+      }
     }
   }, []);
 
@@ -67,6 +75,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('sessionID', sessionId);
         localStorage.setItem('userId', userId);
         localStorage.setItem('userRole', userRole);
+        getUser(userId);
       } else {
         throw new Error('Authentication failed');
       }
@@ -86,6 +95,10 @@ export const AuthProvider = ({ children }) => {
       setSessionID(null);
       setUserID(null);
       setUserRole(null);
+      setEpreuves([]);
+      setInscriptions([]);
+      setDelegation([]);
+      setUser(null);
       localStorage.removeItem('userId');
       localStorage.removeItem('sessionID');
       localStorage.removeItem('userRole');
@@ -98,7 +111,7 @@ export const AuthProvider = ({ children }) => {
   const deleteAccount = async () => {
     const userID = localStorage.getItem('userId');
     const userRole = localStorage.getItem('userRole');
-    const apiUrl = `http://localhost:8080/api/${userRole}/${userID}`;
+    const apiUrl = `http://localhost:8080/api/${userRole}s/${userID}`;
     console.log(apiUrl);
     try {
       // Call delete account API endpoint to delete user account
@@ -111,6 +124,11 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('sessionID');
       localStorage.removeItem('userId');
       localStorage.removeItem('userRole');
+      setBillets([]);
+      setEpreuves([]);
+      setInscriptions([]);
+      setDelegation([]);
+      setUser(null);
     } catch (error) {
       console.error('Delete account failed:', error.message);
       // Handle delete account error
@@ -209,18 +227,51 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const addInscription = (epreuveId) => {
+    setInscriptions([...inscriptions, epreuveId]);
+  }
+
+  const removeInscription = (epreuveId) => {
+    setInscriptions(inscriptions.filter((id) => id !== epreuveId));
+  }
+
+  const getUser = async (userId, userrole) => {
+    // Get delegation if userRole is 'participant'
+    const apiUrl = `http://localhost:8080/api/${userrole}s/${userId}`;
+    console.log(apiUrl);
+    try {
+      // Call get user API endpoint to fetch user details
+      const response = await axios.get(apiUrl, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      console.log('User:', response.data);
+      setUser(response.data);
+      setDelegation(response.data.delegation);
+    } catch (error) {
+      console.error('Get user failed:', error.message);
+      // Handle get user error
+    }
+  }
+
   const value = {
     userID,
     sessionID,
     userRole,
     epreuves,
     billets,
+    inscriptions,
+    delegation,
+    user,
     login,
     logout,
     deleteAccount,
     createBillet,
     updateBillet,
-    getEpreuveById
+    getEpreuveById,
+    addInscription,
+    removeInscription,
   };
 
   return (
