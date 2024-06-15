@@ -9,6 +9,7 @@ import Tickets from './components/Tickets';
 import ParticipantHome from './components/ParticipantHome';
 import EventsListParticipant from './components/EventsListParticipant';
 import ResultsAndRankings from './components/ResultsAndRankings';
+import ControllerHome from './components/ControllerHome';
 
 const App = () => {
   return (
@@ -23,6 +24,7 @@ const App = () => {
         <Route path="/participant-home" element={<ParticipantHome />} />
         <Route path="/events-list-participant" element={<EventsListParticipant />} />
         <Route path="/results-and-rankings" element={<ResultsAndRankings />} />
+        <Route path="/controller-home" element={<ControllerHome />} />
       </Routes>
     </Router>
   );
