@@ -4,12 +4,29 @@ import { useAuth } from './AuthContext';
 
 const EventsList = () => {
   const navigate = useNavigate();
-  const { epreuves, billets, createBillet, updateBillet } = useAuth();
+  const { epreuves, billets, createBillet, updateBillet, inscriptions, addInscription, removeInscription } = useAuth();
   const [message, setMessage] = useState('');
+  // Inscription status for every event
+  const userRole = localStorage.getItem('userRole');
+  // Calculate the time difference between the current time and the event time
+  const timeDifference = (eventId) => {
+    const currentTime = new Date().getTime();
+    console.log('Current time:', currentTime);
+    const event = epreuves.find(epreuve => epreuve.id === eventId);
+    console.log('Event:', event);
+    const eventTime = new Date(event.date).getTime();
+    console.log('Event time:', eventTime);
+    
+    const timeDifference = eventTime - currentTime;
+    console.log('Time difference:', timeDifference);
+    // Convert time difference to days
+    return timeDifference / (1000 * 3600 * 24);
+  };
 
   useEffect(() => {
     const localSessionID = localStorage.getItem('sessionID');
     console.log('sessionID:', localSessionID);
+    console.log(inscriptions)
     if (!localSessionID) {
       // Redirect unauthenticated users to login page
       navigate('/login');
@@ -72,6 +89,22 @@ const EventsList = () => {
     setTimeout(() => navigate('/'), 5000);
   };
 
+
+  const handleInscription = (eventId) => {
+    // Call the API to register for an event
+    console.log('Inscription for event:', eventId);
+    console.log('Inscriptions:', inscriptions);
+    addInscription(eventId);
+    setMessage('Inscription réalisée avec succès');
+  };
+
+  const handleDesinscription = (eventId) => {
+    // Call the API to unregister from an event
+    console.log('Désinscription for event:', eventId);
+    removeInscription(eventId);
+    setMessage('Désinscription réalisée avec succès');
+  }
+
   /*
     private int id;
     private String nom;
@@ -85,12 +118,60 @@ const EventsList = () => {
       {message && <p style={{ color: 'green' }}>{message}</p>}
       {epreuves.map(epreuves => (
         <div key={epreuves.id} className="event-item">
-          <p>{epreuves.nom}</p>
-          <p>{epreuves.date}</p>
-          <p>{epreuves.infrastructure}</p>
-          <p>{epreuves.nombrePlaces}</p>
-          <button onClick={() => handleReserve(epreuves.id)}>Réserver</button>
-          <button className="secondary" onClick={() => handlePay(epreuves.id)}>Payer</button>
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nom de l'épreuve</th>
+            <th>Date</th>
+            <th>Infrastructure d’accueil</th>
+            <th>Nombre de places mises en vente</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {/* 
+            Display the events list from epreuves array
+            Display the event ID, name, date, infrastructure, and places
+            Display the Reserve button for Users with role 'spectateur'
+            Display the Pay button for Users with role 'spectateur'
+            Display the Inscription button (fill it with green) for Users with role 'participant' if it doesn't exist in inscriptions is false, otherwise display désinscrire button in red (fill it with red and the text in white) if the inscriptionStatus is true and the time is more than 10 days before the event date
+            Dpn't repeat the key attribute in the tbody tag
+          */}
+          <tr>
+            <td>{epreuves.id}</td>
+            <td>{epreuves.nom}</td>
+            <td>{epreuves.date}</td>
+            <td>{epreuves.infrastructure}</td>
+            <td>{epreuves.nombrePlaces}</td>
+            <td>
+              {userRole === 'spectateur' && (
+                <>
+                  <button onClick={() => handleReserve(epreuves.id)}>Réserver</button>
+                  <button onClick={() => handlePay(epreuves.id)}>Payer</button>
+                </>
+              )}
+              {userRole === 'participant' && (
+                <>
+                  {!inscriptions.includes(epreuves.id) && (
+                  <button style={{ backgroundColor: 'green', color: 'white' }} onClick={() => handleInscription(epreuves.id)}>
+                    S'inscrire
+                  </button>
+                  )}
+                  {inscriptions.includes(epreuves.id) && (timeDifference(epreuves.id) > 10) && (
+                  <button style={{ backgroundColor: 'red', color: 'white' }} onClick={() => handleDesinscription(epreuves.id)}>
+                    Désinscrire
+                  </button>
+                  )}
+                  {inscriptions.includes(epreuves.id) && (timeDifference(epreuves.id) <= 10) && (
+                  <button style={{  backgroundColor: '#ffc3b7', color: 'black' }} disabled>
+                    Désinscrire
+                  </button>
+                  )}
+                </>
+              )}
+            </td>
+          </tr>
+        </tbody>
         </div>
       ))}
     </div>
