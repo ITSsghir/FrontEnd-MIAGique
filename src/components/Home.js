@@ -50,13 +50,22 @@ const Home = () => {
         );
       case 'participant':
         return (
-          <div>
-            <h2>Welcome, Participant</h2>
-            {message && <p style={{ color: 'green' }}>{message}</p>}
-            <button type="button" className="secondary" onClick={() => navigate('/events-list')}>Consulter le programme des épreuves</button>
-            <button type="button" className="secondary" onClick={() => navigate('/payment')}>Payer</button>
-            <button type="button" className="danger" onClick={handleDeleteAccount}>Supprimer compte</button>
-            <button type="button" className="danger" onClick={handleLogout}>Logout</button>
+          <div className="participant-home">
+            <header className="participant-home-header">
+              <div className="left">
+                <h2>Welcome, Participant</h2>
+              </div>
+              <div className="center">
+                <h1>MIAGique</h1>
+              </div>
+              <div className="right">
+                <button className="logout" onClick={handleLogout}>Logout</button>
+              </div>
+            </header>
+            <main className="participant-home-main">
+              <button className="secondary" onClick={() => navigate('/events-list')}>Consulter programme des épreuves</button>
+              <button className="secondary" onClick={() => navigate('/results-and-rankings')}>Résultats et classement</button>
+            </main>
           </div>
         );
       case 'organisateur':
