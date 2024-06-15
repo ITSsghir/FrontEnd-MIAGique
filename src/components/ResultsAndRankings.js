@@ -1,15 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useEffect } from 'react';
+import { useAuth } from './AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const ResultsAndRankings = () => {
-  const [rankings, setRankings] = useState([]);
+  const navigate = useNavigate();
+  const { user, delegation } = useAuth();
 
   useEffect(() => {
-    // Appel à l'API pour récupérer les résultats et classements
-    axios.get('http://localhost:8080/api/rankings')
-      .then(response => setRankings(response.data))
-      .catch(error => console.error('Erreur lors de la récupération des classements:', error));
-  }, []);
+    const localSessionID = localStorage.getItem('sessionID');
+    console.log('sessionID:', localSessionID);
+    if (!localSessionID) {
+      // Redirect unauthenticated users to login page
+      navigate('/login');
+    }
+    console.log('User', user);
+  }, [navigate]);
 
   return (
     <div className="container">
@@ -25,15 +30,14 @@ const ResultsAndRankings = () => {
           </tr>
         </thead>
         <tbody>
-          {rankings.map(ranking => (
-            <tr key={ranking.id}>
-              <td>{ranking.id}</td>
-              <td>{ranking.name}</td>
-              <td>{ranking.goldMedals}</td>
-              <td>{ranking.silverMedals}</td>
-              <td>{ranking.bronzeMedals}</td>
-            </tr>
-          ))}
+          {/* Show the delegation */}
+          <tr key={delegation.id}>
+            <td>{delegation.id}</td>
+            <td>{delegation.nom}</td>
+            <td>{delegation.nombreMedailleArgent}</td>
+            <td>{delegation.nombreMedailleArgent}</td>
+            <td>{delegation.nombreMedailleBronze}</td>
+          </tr>
         </tbody>
       </table>
     </div>
