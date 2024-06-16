@@ -12,10 +12,7 @@ const AddParticipant = () => {
   const [password, setPassword] = useState('');
   const { delegations, createParticipant, getDelegations } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    getDelegations();
-  }, [delegations, getDelegations]);
+  getDelegations();
 
   // Create a dropdown list of delegations
   const [delegationName, setDelegationName] = useState('');
