@@ -54,7 +54,7 @@ const AddEvent = () => {
       </header>
       <h2>Ajouter une Épreuve</h2>
       <p style={{ color: messageColor }}>{message}</p>
-      <form onSubmit={handleSubmit}>
+      <form>
         <label>Nom de l'épreuve:</label>
         <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
         <label>Date:</label>
@@ -77,7 +77,7 @@ const AddEvent = () => {
         </select>
         <label>Nombre de places mises en vente:</label>
         <input type="number" value={availableSeats} onChange={(e) => setAvailableSeats(e.target.value)} required />
-        <button type="submit">Valider</button>
+        <button type="submit" onClick={handleSubmit}>Ajouter</button>
       </form>
     </div>
   );

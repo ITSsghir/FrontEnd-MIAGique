@@ -48,7 +48,7 @@ const AddDelegation = () => {
        */}
       <p style={{ color: messageColor }}>{message}</p>
       {'\n'}
-      <form onSubmit={handleSubmit}>
+      <form>
         <label>Nom:</label>
         <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
         <label>Médailles d’or:</label>
@@ -57,7 +57,7 @@ const AddDelegation = () => {
         <input type="number" value={silverMedals} onChange={(e) => setSilverMedals(e.target.value)} required />
         <label>Médailles de bronze:</label>
         <input type="number" value={bronzeMedals} onChange={(e) => setBronzeMedals(e.target.value)} required />
-        <button type="submit">Valider</button>
+        <button type="submit" onClick={handleSubmit}>Ajouter</button>
       </form>
     </div>
   );

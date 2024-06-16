@@ -50,7 +50,7 @@ const AddParticipant = () => {
       </header>
       <h2>Ajouter un Participant</h2>
       <p style={{ color: messageColor }}>{message}</p>
-      <form onSubmit={handleSubmit}>
+      <form>
         <label>Prénom:</label>
         <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
         <label>Nom:</label>
@@ -69,7 +69,7 @@ const AddParticipant = () => {
             </option>
           ))}
         </select>
-        <button type="submit">Valider</button>
+        <button type="submit" onClick={handleSubmit}>Valider</button>
       </form>
     </div>
   );

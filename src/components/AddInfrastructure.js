@@ -40,14 +40,14 @@ const AddInfrastructure = () => {
       <h2>Ajouter une Infrastructure Sportive</h2>
         <p style={{ color: messageColor }}>{message}</p>
         {'\n'}
-      <form onSubmit={handleSubmit}>
+      <form>
         <label>Nom:</label>
         <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
         <label>Adresse:</label>
         <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} required />
         <label>Capacité:</label>
         <input type="number" value={capacity} onChange={(e) => setCapacity(e.target.value)} required />
-        <button type="submit">Valider</button>
+        <button type="submit" onClick={handleSubmit}>Ajouter</button>
       </form>
     </div>
   );

@@ -21,7 +21,7 @@ const AddResult = () => {
       console.log('Adding result', participantId, epreuveId, temps, position);
       await createResult(participantId, epreuveId, temps, position);
       // Clean up form
-        
+
       setMessage('Résultat ajouté avec succès');
       setMessageColor('green');
     } catch (error) {
@@ -43,7 +43,7 @@ const AddResult = () => {
       </header>
       <h2>Ajouter un Participant</h2>
       <p style={{ color: messageColor }}>{message}</p>
-      <form onSubmit={handleSubmit}>
+      <form>
         <label>Participant:</label>
         {/* Dropdown list of participants */}
         <select value={participantId} onChange={(e) => setParticipantId(e.target.value)} required>
@@ -68,7 +68,7 @@ const AddResult = () => {
         <input type="text" value={temps} onChange={(e) => setTemps(e.target.value)} required />
         <label>Position:</label>
         <input type="number" value={position} onChange={(e) => setPosition(e.target.value)} required />
-        <button type="submit">Valider</button>
+        <button type="submit" onClick={handleSubmit}>Ajouter</button>
       </form>
     </div>
   );
