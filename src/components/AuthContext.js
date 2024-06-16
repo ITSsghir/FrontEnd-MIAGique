@@ -78,14 +78,12 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (response.status === 200) {
-        console.log(response.headers);
         const sessionId = response.headers['session-id'];
         const userId = response.headers['user-id'];
         const userRole = response.headers['user-role'];
         setUserID(userId);
         setSessionID(sessionId);
         setUserRole(userRole);
-        console.log('User authenticated:', userId, sessionId, userRole);
         localStorage.setItem('sessionID', sessionId);
         localStorage.setItem('userId', userId);
         localStorage.setItem('userRole', userRole);
@@ -144,7 +142,6 @@ export const AuthProvider = ({ children }) => {
     const userID = localStorage.getItem('userId');
     const userRole = localStorage.getItem('userRole');
     const apiUrl = `http://localhost:8080/api/${userRole}s/${userID}`;
-    console.log(apiUrl);
     try {
       // Call delete account API endpoint to delete user account
       await axios.delete(apiUrl, {
@@ -184,13 +181,81 @@ export const AuthProvider = ({ children }) => {
           'session-id': sessionID,
         },
       });
-      console.log('Infrastructures:', response.data);
       setInfrastructures(response.data);
     } catch (error) {
       console.error('Get infrastructures failed:', error.message);
       // Handle get infrastructures error
     }
   }
+
+  const createInfrastructure = async (name, location, capacity) => {
+    const apiUrl = 'http://localhost:8080/api/infrastructuresportives';
+    try {
+      // Call create infrastructure API endpoint to create a new infrastructure
+      const response = await axios.post(apiUrl, {
+          nom: name,
+          adresse: location,
+          capacite: capacity,
+        }, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      getInfrastructures();
+    } catch (error) {
+      console.error('Create infrastructure failed:', error.message);
+      // Handle create infrastructure error
+    }
+  };
+
+  const updateInfrastructure = async (infrastructureId, name, location, capacity) => {
+    const apiUrl = `http://localhost:8080/api/infrastructuresportives/${infrastructureId}`;
+    // check if the infrastructureId is valid
+    if (!infrastructureId) {
+      console.error('Infrastructure ID is required');
+      return;
+    }
+    // Check if capacity is a number
+    if (isNaN(capacity)) {
+      console.error('Capacité must be a number');
+      return;
+    }
+    // If one field is not provided, keep the existing value
+    const updatedInfrastructure = {
+      nom: name,
+      adresse: location,
+      capacite: capacity,
+    };
+
+    try {
+      // Call update infrastructure API endpoint to update infrastructure details
+      const response = await axios.put(apiUrl, updatedInfrastructure, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      getInfrastructures();
+    } catch (error) {
+      console.error('Update infrastructure failed:', error.message);
+      // Handle update infrastructure error
+    }
+  };
+
+  const deleteInfrastructure = async (infrastructureId) => {
+    const apiUrl = `http://localhost:8080/api/infrastructuresportives/${infrastructureId}`;
+    try {
+      // Call delete infrastructure API endpoint to delete an infrastructure
+      await axios.delete(apiUrl, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      setInfrastructures(infrastructures.filter(infrastructure => infrastructure.id !== infrastructureId));
+    } catch (error) {
+      console.error('Delete infrastructure failed:', error.message);
+      // Handle delete infrastructure error
+    }
+  };
 
 
   const getEpreuves = async () => {
@@ -202,7 +267,6 @@ export const AuthProvider = ({ children }) => {
           'session-id': sessionID,
         },
       });
-      console.log('Epreuves:', response.data);
       setEpreuves(response.data);
       
     } catch (error) {
@@ -220,7 +284,6 @@ export const AuthProvider = ({ children }) => {
           'session-id': sessionID,
         },
       });
-      console.log('Epreuve:', response.data);
       return response.data;
     } catch (error) {
       console.error('Get epreuve by ID failed:', error.message);
@@ -242,7 +305,6 @@ export const AuthProvider = ({ children }) => {
           'session-id': sessionID,
         },
       });
-      console.log('Epreuve created:', response.data);
       getEpreuves();
     } catch (error) {
       console.error('Create epreuve failed:', error.message);
@@ -276,7 +338,6 @@ export const AuthProvider = ({ children }) => {
           'session-id': sessionID,
         },
       });
-      console.log('Epreuve updated:', response.data);
       getEpreuves();
     } catch (error) {
       console.error('Update epreuve failed:', error.message);
@@ -309,7 +370,6 @@ export const AuthProvider = ({ children }) => {
           'session-id': sessionID,
         },
       });
-      console.log('Billets:', response.data);
       setBillets(response.data);
     } catch (error) {
       console.error('Get billets failed:', error.message);
@@ -331,7 +391,6 @@ export const AuthProvider = ({ children }) => {
           'session-id': sessionID,
         },
       });
-      console.log('Billet created:', response.data);
       getBillets();
     } catch (error) {
       console.error('Create billet failed:', error.message);
@@ -350,7 +409,6 @@ export const AuthProvider = ({ children }) => {
           'session-id': sessionID,
         },
       });
-      console.log('Billet updated:', response.data);
       getBillets();
     } catch (error) {
       console.error('Update billet failed:', error.message);
@@ -369,7 +427,6 @@ export const AuthProvider = ({ children }) => {
   const getUser = async (userId, userrole) => {
     // Get delegation if userRole is 'participant'
     const apiUrl = `http://localhost:8080/api/${userrole}s/${userId}`;
-    console.log(apiUrl);
     try {
       // Call get user API endpoint to fetch user details
       const response = await axios.get(apiUrl, {
@@ -377,10 +434,8 @@ export const AuthProvider = ({ children }) => {
           'session-id': sessionID,
         },
       });
-      console.log('User:', response.data);
       setUser(response.data);
       setDelegation(response.data.delegation);
-      console.log('Organisateur role:', response.data.role);
       setRole(response.data.role);
       localStorage.setItem('OrganisateurRole', response.data.role);
     } catch (error) {
@@ -398,7 +453,6 @@ export const AuthProvider = ({ children }) => {
           'session-id': sessionID,
         },
       });
-      console.log('Delegations:', response.data);
       setDelegations(response.data);
     } catch (error) {
       console.error('Get delegations failed:', error.message);
@@ -420,7 +474,6 @@ export const AuthProvider = ({ children }) => {
           'session-id': sessionID,
         },
       });
-      console.log('Delegation created:', response.data);
       setDelegation(response.data);
     } catch (error) {
       console.error('Create delegation failed:', error.message);
@@ -459,7 +512,6 @@ export const AuthProvider = ({ children }) => {
           'session-id': sessionID,
         },
       });
-      console.log('Participant created:', response.data);
     } catch (error) {
       console.error('Create participant failed:', error.message);
       // Handle create participant error
@@ -492,7 +544,6 @@ export const AuthProvider = ({ children }) => {
           'session-id': sessionID,
         },
       });
-      console.log('Participants:', response.data);
       setParticipants(response.data);
     } catch (error) {
       console.error('Get participants failed:', error.message);
@@ -514,7 +565,6 @@ export const AuthProvider = ({ children }) => {
           'session-id': sessionID,
         },
       });
-      console.log('Participant updated:', response.data);
     } catch (error) {
       console.error('Update participant failed:', error.message);
       // Handle update participant error
@@ -552,7 +602,6 @@ export const AuthProvider = ({ children }) => {
           'session-id': sessionID,
         },
       });
-      console.log('Controller created:', response.data);
     } catch (error) {
       console.error('Create controller failed:', error.message);
       // Handle create controller error
@@ -568,9 +617,7 @@ export const AuthProvider = ({ children }) => {
           'session-id': sessionID,
         },
       });
-      console.log('Controllers:', response.data);
       const controllers = response.data.filter(controller => controller.role === 'controleur');
-      console.log('Controllers:', controllers);
       setControleurs(controllers);
     } catch (error) {
       console.error('Get controllers failed:', error.message);
@@ -592,7 +639,6 @@ export const AuthProvider = ({ children }) => {
           'session-id': sessionID,
         },
       });
-      console.log('Controller updated:', response.data);
       setControleurs(controleurs.map(controller => controller.id === id ? response.data : controller));
     } catch (error) {
       console.error('Update controller failed:', error.message);
@@ -656,6 +702,10 @@ export const AuthProvider = ({ children }) => {
     getControllers,
     updateController,
     deleteController,
+    getInfrastructures,
+    createInfrastructure,
+    updateInfrastructure,
+    deleteInfrastructure
   };
 
   return (
