@@ -1,44 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
 const ManageParticipants = () => {
-  const [participants, setParticipants] = useState([]);
+  const { participants, deleteParticipant } = useAuth();
+  const [messageColor, setMessageColor] = useState('green');
+  const [message, setMessage] = useState('');
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchParticipants = async () => {
-      const result = await axios.get('http://localhost:8080/api/participants');
-      setParticipants(result.data);
-    };
-    fetchParticipants();
-  }, []);
-
   const handleRemove = async (id) => {
     try {
-      await axios.delete(`http://localhost:8080/api/participants/${id}`);
-      setParticipants(participants.filter(participant => participant.id !== id));
-      alert('Participant supprimé avec succès');
+      await deleteParticipant(id);
+      setMessage('Participant supprimé avec succès');
+      setMessageColor('green');
     } catch (error) {
       console.error('Erreur lors de la suppression du participant', error);
-      alert('Erreur lors de la suppression du participant');
+      setMessage('Erreur lors de la suppression du participant');
+      setMessageColor('red');
     }
   };
-
-  const handleLogout = () => {
-    navigate('/login');
-  };
-
   const handleBack = () => {
-    navigate('/organizer-home');
+    navigate('/');
   };
+
+  useEffect(() => {
+    console.log('Participants', participants);
+    for (let participant of participants) {
+      console.log('Participant', participant);
+      console.log("delegation participant", participant.delegation);
+    }
+  }
+  , [participants]);
+
 
   return (
     <div className="table-container">
       <header className="form-header">
         <h1>MIAGique</h1>
         <button className="back" onClick={handleBack}>Retour</button>
-        <button className="logout" onClick={handleLogout}>Logout</button>
       </header>
       <h2>Gérer les Participants</h2>
       <table>
@@ -48,20 +46,21 @@ const ManageParticipants = () => {
             <th>Prénom</th>
             <th>Nom</th>
             <th>Email</th>
-            <th>Délégation</th>
+            <th>Delegation</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
+          {/* Display participants by accessing the participants array */}
           {participants.map(participant => (
             <tr key={participant.id}>
               <td>{participant.id}</td>
-              <td>{participant.firstName}</td>
-              <td>{participant.lastName}</td>
+              <td>{participant.prenom}</td>
+              <td>{participant.nom}</td>
               <td>{participant.email}</td>
-              <td>{participant.delegation}</td>
+              <td>{participant.delegation ? participant.delegation.id : 'N/A'}</td>
               <td>
-                <button onClick={() => handleRemove(participant.id)}>Supprimer</button>
+                <button style={{backgroundColor: "red"}} onClick={() => handleRemove(participant.id)}>Supprimer</button>
               </td>
             </tr>
           ))}
