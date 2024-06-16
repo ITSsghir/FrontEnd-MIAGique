@@ -76,8 +76,6 @@ const Signup = () => {
           <select value={role} onChange={handleRoleChange} required>
             <option value="">Select Role</option>
             <option value="spectateur">Spectateur</option>
-            <option value="participant">Participant</option>
-            <option value="controleur">Controleur</option>
             <option value="organisateur">Organisateur</option>
           </select>
         </div>
