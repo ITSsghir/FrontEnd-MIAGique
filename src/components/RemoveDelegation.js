@@ -21,7 +21,7 @@ const RemoveDelegation = () => {
   };
 
   const handleBack = () => {
-    navigate('/organizer-home');
+    navigate('/');
   };
 
   return (
