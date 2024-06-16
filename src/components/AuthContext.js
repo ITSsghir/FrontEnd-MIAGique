@@ -19,6 +19,7 @@ export const AuthProvider = ({ children }) => {
   const [inscriptions, setInscriptions] = useState([]);
   const [delegation, setDelegation] = useState([]);
   const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -43,15 +44,18 @@ export const AuthProvider = ({ children }) => {
       setUserRole(null);
     }
 
+    const OrganisateurRole = localStorage.getItem('OrganisateurRole');
+    if (OrganisateurRole) {
+      setRole(OrganisateurRole);
+    } else {
+      setRole(null);
+    }
+
     // Fetch epreuves if user is logged in and userRole is 'spectateur' or 'participant' or 'organisateur'
     if (sessionId) {
       getEpreuves();
       getBillets();
-      console.log('User role:', userRole);
-      console.log('User ID:', userId);
-      if (userRole === 'participant') {
-        getUser(userId, userRole);
-      }
+      getUser(userId, userRole);
     }
   }, []);
 
@@ -75,7 +79,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('sessionID', sessionId);
         localStorage.setItem('userId', userId);
         localStorage.setItem('userRole', userRole);
-        getUser(userId);
+        getUser(userId, userRole);
       } else {
         throw new Error('Authentication failed');
       }
@@ -249,6 +253,9 @@ export const AuthProvider = ({ children }) => {
       console.log('User:', response.data);
       setUser(response.data);
       setDelegation(response.data.delegation);
+      console.log('Organisateur role:', response.data.role);
+      setRole(response.data.role);
+      localStorage.setItem('OrganisateurRole', response.data.role);
     } catch (error) {
       console.error('Get user failed:', error.message);
       // Handle get user error
@@ -264,6 +271,7 @@ export const AuthProvider = ({ children }) => {
     inscriptions,
     delegation,
     user,
+    role,
     login,
     logout,
     deleteAccount,
