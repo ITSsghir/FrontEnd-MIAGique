@@ -1,38 +1,39 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
 const AddDelegation = () => {
-  const [id, setId] = useState('');
+  const [messageColor, setMessageColor] = useState('green');
+  const [message, setMessage] = useState('');
   const [name, setName] = useState('');
   const [goldMedals, setGoldMedals] = useState('');
   const [silverMedals, setSilverMedals] = useState('');
   const [bronzeMedals, setBronzeMedals] = useState('');
+
+  const { createDelegation, logout } = useAuth();
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:8080/api/delegations', {
-        id,
-        name,
-        goldMedals,
-        silverMedals,
-        bronzeMedals
-      });
-      alert('Délégation ajoutée avec succès');
+      await createDelegation(name, goldMedals, silverMedals, bronzeMedals);
+      setMessage('Délégation ajoutée avec succès');
+      // Clean up form
+      setName('');
+      setGoldMedals('');
+      setSilverMedals('');
+      setBronzeMedals('');
+      setMessageColor('green');
     } catch (error) {
-      console.error('Erreur lors de l\'ajout de la délégation', error);
-      alert('Erreur lors de l\'ajout de la délégation');
+      setMessage('Erreur lors de l’ajout de la délégation');
+      setMessageColor('red');
     }
-  };
 
-  const handleLogout = () => {
-    navigate('/login');
   };
 
   const handleBack = () => {
-    navigate('/organizer-home');
+    navigate('/');
   };
 
   return (
@@ -40,12 +41,14 @@ const AddDelegation = () => {
       <header className="form-header">
         <h1>MIAGique</h1>
         <button className="back" onClick={handleBack}>Retour</button>
-        <button className="logout" onClick={handleLogout}>Logout</button>
       </header>
       <h2>Ajouter une Délégation</h2>
+      {'\n'}
+      {/* Display message, if succes, color is green, else color is red 
+       */}
+      <p style={{ color: messageColor }}>{message}</p>
+      {'\n'}
       <form onSubmit={handleSubmit}>
-        <label>ID:</label>
-        <input type="text" value={id} onChange={(e) => setId(e.target.value)} required />
         <label>Nom:</label>
         <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
         <label>Médailles d’or:</label>
