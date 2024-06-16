@@ -29,7 +29,9 @@ const ManageResults = () => {
 
   const handleRemove = async (id) => {
     try {
-      await deleteResult(id);
+      const epreuveId = result.epreuve.id;
+      const participantId = result.participant.id;
+      await deleteResult(epreuveId, participantId);
       setMessage('Résultat supprimé avec succès');
       setMessageColor('green');
       getResults();
