@@ -15,6 +15,7 @@ import Statistics from './Statistics';
 import AddInfrastructure from './AddInfrastructure';
 import ManageInfrastructure from './ManageInfrastructure';
 import AddResult from './AddResult';
+import ManageResults from './ManageResults';
 import './OrganizerHome.css';
 import './ParticipantHome.css';
 import './ControllerHome.css';
@@ -67,6 +68,8 @@ const Home = () => {
         return <ManageInfrastructure />;
       case 'addResult':
         return <AddResult />;
+      case 'manageResults':
+        return <ManageResults />;
       default:
         return <p>Veuillez sélectionner une section à gérer.</p>;
     }
@@ -272,6 +275,7 @@ const Home = () => {
                   <div className="section">
                     <h3>Résultats</h3>
                     <button onClick={() => setActiveSection('addResult')}>Ajouter un résultat</button>
+                    <button onClick={() => setActiveSection('manageResults')}>Gérer les résultats</button>
                   </div>
                   <div className="section">
                     <h3>Statistiques</h3>
