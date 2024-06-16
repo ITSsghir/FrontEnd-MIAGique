@@ -12,6 +12,8 @@ import ManageEvents from './ManageEvents';
 import AddController from './AddController';
 import ManageControllers from './ManageControllers';
 import Statistics from './Statistics';
+import AddInfrastructure from './AddInfrastructure';
+import ManageInfrastructure from './ManageInfrastructure';
 import './OrganizerHome.css';
 import './ParticipantHome.css';
 import './ControllerHome.css';
@@ -58,6 +60,10 @@ const Home = () => {
         return <ManageControllers />;
       case 'statistics':
         return <Statistics />;
+      case 'addInfrastructure':
+        return <AddInfrastructure />;
+      case 'manageInfrastructure':
+        return <ManageInfrastructure />;
       default:
         return <p>Veuillez sélectionner une section à gérer.</p>;
     }
@@ -243,6 +249,11 @@ const Home = () => {
                     <button onClick={() => setActiveSection('addParticipant')}>Créer participant</button>
                     <button onClick={() => setActiveSection('maxParticipants')}>Nombre max de participants</button>
                     <button onClick={() => setActiveSection('manageParticipants')}>Gérer participants</button>
+                  </div>
+                  <div className="section">
+                    <h3>Gestion des Infrastructures d'accueil</h3>
+                    <button onClick={() => setActiveSection('addInfrastructure')}>Ajouter une infrastructure</button>
+                    <button onClick={() => setActiveSection('manageInfrastructure')}>Gérer les infrastructures</button>
                   </div>
                   <div className="section">
                     <h3>Gestion des épreuves</h3>
