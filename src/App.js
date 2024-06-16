@@ -8,7 +8,6 @@ import Payment from './components/Payment';
 import Tickets from './components/Tickets';
 import ResultsAndRankings from './components/ResultsAndRankings';
 import ControllerHome from './components/ControllerHome';
-import OrganizerHome from './components/OrganizerHome';
 import AddDelegation from './components/AddDelegation';
 import RemoveDelegation from './components/RemoveDelegation';
 import AddParticipant from './components/AddParticipant';
@@ -32,7 +31,6 @@ const App = () => {
         <Route path="/tickets" element={<Tickets />} />
         <Route path="/results-and-rankings" element={<ResultsAndRankings />} />
         <Route path="/controller-home" element={<ControllerHome />} />
-        <Route path="/organizer-home" element={<OrganizerHome />} />
         <Route path="/add-delegation" element={<AddDelegation />} />
         <Route path="/remove-delegation" element={<RemoveDelegation />} />
         <Route path="/add-participant" element={<AddParticipant />} />
