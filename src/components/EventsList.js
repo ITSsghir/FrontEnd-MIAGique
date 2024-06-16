@@ -4,8 +4,9 @@ import { useAuth } from './AuthContext';
 
 const EventsList = () => {
   const navigate = useNavigate();
-  const { epreuves, billets, createBillet, updateBillet, inscriptions, addInscription, removeInscription } = useAuth();
+  const { epreuves, billets, createBillet, updateBillet, inscriptions, addInscription, removeInscription, maxParticipantsTable, updateNbParticipants } = useAuth();
   const [message, setMessage] = useState('');
+  const [messageColor, setMessageColor] = useState('green');
   // Inscription status for every event
   const userRole = localStorage.getItem('userRole');
   // Calculate the time difference between the current time and the event time
@@ -43,6 +44,7 @@ const EventsList = () => {
       createBillet(eventId);
       console.log('Create new ticket for event:', eventId);
       setMessage('Ticket créé et réservé avec succès');
+      setMessageColor('green');
     } else {
       // Search for the event in the list of billets
       const existingBillet = billets.find(billet => billet.epreuve.id === eventId);
@@ -50,17 +52,20 @@ const EventsList = () => {
         if (existingBillet.etat === 'Réservé' || existingBillet.etat === 'Payé') {
           console.log('Ticket already reserved for event:', eventId);
           setMessage('Ticket déjà réservé pour cet événement');
+          setMessageColor('red');
         } else {
           // Update the ticket status to 'Réservé'
           updateBillet(existingBillet.id, 'Réservé');
           console.log('Update ticket status to Réservé for event:', eventId);
           setMessage('Ticket réservé avec succès');
+          setMessageColor('green');
         }
       } else {
         // Create a new ticket for the event
         createBillet(eventId);
         console.log('Create new ticket for event:', eventId);
         setMessage('Ticket créé et réservé avec succès');
+        setMessageColor('green');
       }
     }
   };
@@ -75,6 +80,7 @@ const EventsList = () => {
     if (!billets) {
       console.error('No tickets found');
       setMessage('Aucun billet trouvé');
+      setMessageColor('red');
       return;
     }
 
@@ -84,6 +90,7 @@ const EventsList = () => {
     console.log('Pay for the ticket');
     updateBillet(existingBillet.id, 'Payé');
     setMessage('Paiement effectué avec succès');
+    setMessageColor('green');
     setTimeout(() => setMessage('Redirecting to homepage...'), 3000);
     setTimeout(() => navigate('/'), 5000);
   };
@@ -93,8 +100,41 @@ const EventsList = () => {
     // Call the API to register for an event
     console.log('Inscription for event:', eventId);
     console.log('Inscriptions:', inscriptions);
-    addInscription(eventId);
-    setMessage('Inscription réalisée avec succès');
+    if (inscriptions.includes(eventId)) {
+      console.error('Already registered for event:', eventId);
+      setMessage('Déjà inscrit pour cet événement');
+      setMessageColor('red');
+      return;
+    }
+    // Check the maximum number of participants for the event
+    // The structure of maxParticipantsTable is as follows:
+    // [
+    //   {
+    //     epreuveId: 2,
+    //     maxParticipants: 10
+    //   },
+    //   {
+    //     epreuveId: 3,
+    //     maxParticipants: 20
+    //   }
+    // ]
+    const maxParticipants = maxParticipantsTable.find(item => item.epreuveId === eventId);
+    if (maxParticipants) {
+      if (maxParticipants.maxParticipants > maxParticipants.nbParticipants) {
+        console.log('Inscription is allowed for event:', eventId);
+        addInscription(eventId);
+        setMessage('Inscription réalisée avec succès');
+        setMessageColor('green');
+      } else {
+        console.error('Maximum number of participants reached for event:', eventId);
+        setMessage('Nombre maximal de participants atteint pour cet événement');
+        setMessageColor('red');
+      }
+    } else {
+      console.error('Maximum number of participants not defined for event:', eventId);
+      setMessage('Nombre maximal de participants non défini pour cet événement');
+      setMessageColor('red');
+    }
   };
 
   const handleDesinscription = (eventId) => {
@@ -102,6 +142,8 @@ const EventsList = () => {
     console.log('Désinscription for event:', eventId);
     removeInscription(eventId);
     setMessage('Désinscription réalisée avec succès');
+    setMessageColor('green');
+    updateNbParticipants(eventId, maxParticipantsTable.nbParticipants - 1);
   }
 
   /*
