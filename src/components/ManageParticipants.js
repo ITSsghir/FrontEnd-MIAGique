@@ -3,17 +3,31 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
 const ManageParticipants = () => {
+  
   const { participants, deleteParticipant, getParticipants, updateParticipant, delegations } = useAuth();
-  const [participant, setParticipant] = useState({});
-  const [delegationName, setDelegationName] = useState('');
-  const [messageColor, setMessageColor] = useState('green');
-  const [message, setMessage] = useState('');
   const navigate = useNavigate();
-  const [editModeParticipantId, setEditModeParticipantId] = useState(null); // Track participant in edit mode
+  getParticipants();
 
-  useEffect(() => {
-    getParticipants();
-  }, [getParticipants]);
+  const [editModeParticipantId, setEditModeParticipantId] = useState(null); // Track participant in edit mode
+  const [participant, setParticipant] = useState({
+    id: '',
+    prenom: '',
+    nom: '',
+    email: '',
+    delegationId: ''
+  }); // State to manage participant data being edited
+
+  const [newParticipant, setNewParticipant] = useState({
+    id: '',
+    prenom: '',
+    nom: '',
+    email: '',
+    delegationId: ''
+  }); // State to manage new changes before update
+
+  const [delegationName, setDelegationName] = useState('');
+  const [message, setMessage] = useState('');
+  const [messageColor, setMessageColor] = useState('green');
 
   const handleRemove = async (id) => {
     try {
@@ -29,8 +43,8 @@ const ManageParticipants = () => {
 
   const handleUpdate = async (id) => {
     try {
-      const delegation = delegations.find(delegation => delegation.nom === delegationName);
-      await updateParticipant(id, participant.prenom, participant.nom, participant.email, delegation.id);
+      const selectedDelegation = delegations.find(delegation => delegation.nom === delegationName);
+      await updateParticipant(id, newParticipant.prenom, newParticipant.nom, newParticipant.email, selectedDelegation.id);
       setMessage('Participant modifié avec succès');
       setMessageColor('green');
       setEditModeParticipantId(null); // Exit edit mode
@@ -41,16 +55,28 @@ const ManageParticipants = () => {
     }
   };
 
-  const handleBack = () => {
-    navigate('/');
-  };
-
   const toggleEditMode = (id) => {
+    const selectedParticipant = participants.find(participant => participant.id === id);
+    setParticipant(selectedParticipant); // Set the participant being edited
+    setNewParticipant(selectedParticipant); // Set the newParticipant with current participant data
+    setDelegationName(selectedParticipant.delegation.nom); // Set the current delegation name
     setEditModeParticipantId(id === editModeParticipantId ? null : id); // Toggle edit mode
   };
 
   const isEditMode = (participantId) => {
     return editModeParticipantId === participantId;
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewParticipant(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
+  const handleBack = () => {
+    navigate('/');
   };
 
   return (
@@ -78,33 +104,52 @@ const ManageParticipants = () => {
               <td>{participant.id}</td>
               <td>
                 {isEditMode(participant.id) ? (
-                  <input type="text" value={participant.prenom} onChange={(e) => setParticipant({ ...participant, prenom: e.target.value })} />
+                  <input
+                    type="text"
+                    name="prenom"
+                    value={newParticipant.prenom}
+                    onChange={handleInputChange}
+                    required
+                  />
                 ) : (
                   participant.prenom
                 )}
               </td>
               <td>
                 {isEditMode(participant.id) ? (
-                  <input type="text" value={participant.nom} onChange={(e) => setParticipant({ ...participant, nom: e.target.value })} />
+                  <input
+                    type="text"
+                    name="nom"
+                    value={newParticipant.nom}
+                    onChange={handleInputChange}
+                    required
+                  />
                 ) : (
                   participant.nom
                 )}
               </td>
               <td>
                 {isEditMode(participant.id) ? (
-                  <input type="email" value={participant.email} onChange={(e) => setParticipant({ ...participant, email: e.target.value })} />
+                  <input
+                    type="email"
+                    name="email"
+                    value={newParticipant.email}
+                    onChange={handleInputChange}
+                    required
+                  />
                 ) : (
                   participant.email
                 )}
               </td>
               <td>
                 {isEditMode(participant.id) ? (
-                  <select value={delegationName} onChange={(e) => setDelegationName(e.target.value)} required>
-                    <option value="">{participant.delegation.nom}</option>
+                  <select
+                    value={delegationName}
+                    onChange={(e) => setDelegationName(e.target.value)}
+                    required
+                  >
                     {delegations.map(delegation => (
-                      delegation.nom !== participant.delegation.nom && (
-                        <option key={delegation.id} value={delegation.nom}>{delegation.nom}</option>
-                      )
+                      <option key={delegation.id} value={delegation.nom}>{delegation.nom}</option>
                     ))}
                   </select>
                 ) : (
