@@ -39,6 +39,8 @@ const ManageParticipants = () => {
         <button className="back" onClick={handleBack}>Retour</button>
       </header>
       <h2>Gérer les Participants</h2>
+      <p style={{ color: messageColor }}>{message}</p>
+      {'\n'}
       <table>
         <thead>
           <tr>
