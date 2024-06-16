@@ -26,7 +26,6 @@ const EventsList = () => {
   useEffect(() => {
     const localSessionID = localStorage.getItem('sessionID');
     console.log('sessionID:', localSessionID);
-    console.log(inscriptions)
     if (!localSessionID) {
       // Redirect unauthenticated users to login page
       navigate('/login');
