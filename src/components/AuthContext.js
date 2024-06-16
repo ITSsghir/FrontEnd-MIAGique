@@ -21,6 +21,7 @@ export const AuthProvider = ({ children }) => {
   const [delegation, setDelegation] = useState([]);
   const [delegations, setDelegations] = useState([]);
   const [participants, setParticipants] = useState([]);
+  const [controleurs, setControleurs] = useState([]); // [1
   const [infrastructures, setInfrastructures] = useState([]);
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
@@ -64,6 +65,7 @@ export const AuthProvider = ({ children }) => {
       getDelegations();
       getParticipants();
       getInfrastructures();
+      getControllers();
     }
   }, []);
 
@@ -97,6 +99,7 @@ export const AuthProvider = ({ children }) => {
         getBillets();
         getDelegations();
         getParticipants();
+        getControllers();
         getInfrastructures();
       } else {
         throw new Error('Authentication failed');
@@ -122,6 +125,7 @@ export const AuthProvider = ({ children }) => {
       setDelegation([]);
       setDelegations([]);
       setParticipants([]);
+      setControleurs([]);
       setMaxParticipantsTable([]);
       setInfrastructures([]);
       setBillets([]);
@@ -156,6 +160,7 @@ export const AuthProvider = ({ children }) => {
       setDelegation([]);
       setDelegations([]);
       setParticipants([]);
+      setControleurs([]);
       setMaxParticipantsTable([]);
       setInfrastructures([]);
       setBillets([]);
@@ -532,6 +537,85 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const createController = async (prenom, nom, email, password) => {
+    const apiUrl = 'http://localhost:8080/api/organisateurs';
+    try {
+      // Call create controller API endpoint to create a new controller
+      const response = await axios.post(apiUrl, {
+          nom: nom,
+          prenom: prenom,
+          email: email,
+          password: password,
+          role: 'controleur',
+        }, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      console.log('Controller created:', response.data);
+    } catch (error) {
+      console.error('Create controller failed:', error.message);
+      // Handle create controller error
+    }
+  };
+
+  const getControllers = async () => {
+    const apiUrl = 'http://localhost:8080/api/organisateurs';
+    try {
+      // Call get controllers API endpoint to fetch controllers
+      const response = await axios.get(apiUrl, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      console.log('Controllers:', response.data);
+      const controllers = response.data.filter(controller => controller.role === 'controleur');
+      console.log('Controllers:', controllers);
+      setControleurs(controllers);
+    } catch (error) {
+      console.error('Get controllers failed:', error.message);
+      // Handle get controllers error
+    }
+  }
+
+  const updateController = async (id, nom, prenom, email, password) => {
+    const apiUrl = `http://localhost:8080/api/organisateurs/${id}`;
+    try {
+      // Call update controller API endpoint to update a controller
+      const response = await axios.put(apiUrl, {
+          nom: nom,
+          prenom: prenom,
+          email: email,
+          password: password,
+        }, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      console.log('Controller updated:', response.data);
+      setControleurs(controleurs.map(controller => controller.id === id ? response.data : controller));
+    } catch (error) {
+      console.error('Update controller failed:', error.message);
+      // Handle update controller error
+    }
+  };
+
+  const deleteController = async (id) => {
+    const apiUrl = `http://localhost:8080/api/organisateurs/${id}`;
+    try {
+      // Call delete controller API endpoint to delete a controller
+      await axios.delete(apiUrl, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      setControleurs(controleurs.filter(controller => controller.id !== id));
+    } catch (error) {
+      console.error('Delete controller failed:', error.message);
+      // Handle delete controller error
+    }
+  };
+
   const value = {
     userID,
     sessionID,
@@ -543,6 +627,7 @@ export const AuthProvider = ({ children }) => {
     delegations,
     maxParticipantsTable,
     participants,
+    controleurs,
     user,
     role,
     login,
@@ -551,6 +636,7 @@ export const AuthProvider = ({ children }) => {
     infrastructures,
     createBillet,
     updateBillet,
+    getEpreuves,
     getEpreuveById,
     createEpreuve,
     updateEpreuve,
@@ -565,7 +651,11 @@ export const AuthProvider = ({ children }) => {
     updateNbParticipants,
     getParticipants,
     deleteParticipant,
-    updateParticipant
+    updateParticipant,
+    createController,
+    getControllers,
+    updateController,
+    deleteController,
   };
 
   return (
