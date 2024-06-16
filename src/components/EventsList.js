@@ -4,7 +4,7 @@ import { useAuth } from './AuthContext';
 
 const EventsList = () => {
   const navigate = useNavigate();
-  const { epreuves, billets, createBillet, updateBillet, inscriptions, addInscription, removeInscription, maxParticipantsTable, updateNbParticipants } = useAuth();
+  const { epreuves, billets, createBillet, updateBillet, inscriptions, addInscription, removeInscription, maxParticipantsTable, updateNbParticipants, createResult, deleteResult } = useAuth();
   const [message, setMessage] = useState('');
   const [messageColor, setMessageColor] = useState('green');
   // Inscription status for every event
@@ -106,18 +106,6 @@ const EventsList = () => {
       setMessageColor('red');
       return;
     }
-    // Check the maximum number of participants for the event
-    // The structure of maxParticipantsTable is as follows:
-    // [
-    //   {
-    //     epreuveId: 2,
-    //     maxParticipants: 10
-    //   },
-    //   {
-    //     epreuveId: 3,
-    //     maxParticipants: 20
-    //   }
-    // ]
     const maxParticipants = maxParticipantsTable.find(item => item.epreuveId === eventId);
     if (maxParticipants) {
       if (maxParticipants.maxParticipants > maxParticipants.nbParticipants) {
@@ -125,6 +113,10 @@ const EventsList = () => {
         addInscription(eventId);
         setMessage('Inscription réalisée avec succès');
         setMessageColor('green');
+        updateNbParticipants(eventId, maxParticipantsTable.nbParticipants + 1);
+        // Create a new result for the event and the participant
+        const eventDate = epreuves.find(epreuve => epreuve.id === eventId).date;
+        createResult(eventId, eventDate, localStorage.getItem('userId'), 'En attente', 0);
       } else {
         console.error('Maximum number of participants reached for event:', eventId);
         setMessage('Nombre maximal de participants atteint pour cet événement');
@@ -144,6 +136,8 @@ const EventsList = () => {
     setMessage('Désinscription réalisée avec succès');
     setMessageColor('green');
     updateNbParticipants(eventId, maxParticipantsTable.nbParticipants - 1);
+    // Delete the result for the event and the participant
+    deleteResult(eventId, localStorage.getItem('userId'));
   }
 
   /*
