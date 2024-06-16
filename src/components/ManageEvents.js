@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
 const ManageEvents = () => {
-  const { epreuves, updateEpreuve, deleteEpreuve } = useAuth();
+  const { epreuves, updateEpreuve, deleteEpreuve, getEpreuves } = useAuth();
   const navigate = useNavigate();
+  getEpreuves();
 
   const [message, setMessage] = useState('');
   const [messageColor, setMessageColor] = useState('green');
