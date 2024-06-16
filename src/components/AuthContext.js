@@ -21,8 +21,9 @@ export const AuthProvider = ({ children }) => {
   const [delegation, setDelegation] = useState([]);
   const [delegations, setDelegations] = useState([]);
   const [participants, setParticipants] = useState([]);
-  const [controleurs, setControleurs] = useState([]); // [1
+  const [controleurs, setControleurs] = useState([]);
   const [infrastructures, setInfrastructures] = useState([]);
+  const [results, setResults] = useState([]);
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
 
@@ -67,6 +68,7 @@ export const AuthProvider = ({ children }) => {
       getInfrastructures();
       getControllers();
     }
+    getResults();
   }, []);
 
   const login = async (email, password) => {
@@ -662,6 +664,80 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const getResults = async () => {
+    const apiUrl = 'http://localhost:8080/api/resultats';
+    try {
+      // Call get results API endpoint to fetch results
+      const response = await axios.get(apiUrl);
+      setResults(response.data);
+    } catch (error) {
+      console.error('Get results failed:', error.message);
+      // Handle get results error
+    }
+  }
+
+  const createResult = async (epreuveId, participantId, temps, position) => {
+
+    const apiUrl = 'http://localhost:8080/api/resultats';
+    try {
+      // Call create result API endpoint to create a new result
+      const response = await axios.post(apiUrl, {
+          epreuveId: epreuveId,
+          participantId: participantId,
+          temps: temps,
+          position: position,
+        }, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+    } catch (error) {
+      console.error('Create result failed:', error.message);
+      // Handle create result error
+      throw new Error('Create result failed');
+    }
+  }
+
+  const updateResult = async (id, epreuveId, participantId, temps, position) => {
+    const apiUrl = `http://localhost:8080/api/resultats/${id}`;
+    try {
+      // Call update result API endpoint to update a result
+      const response = await axios.put(apiUrl, {
+          epreuveId: epreuveId,
+          participantId: participantId,
+          temps: temps,
+          position: position,
+        }, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      setResults(results.map(result => result.id === id ? response.data : result));
+    } catch (error) {
+      console.error('Update result failed:', error.message);
+      // Handle update result error
+    }
+  }
+
+  const deleteResult = async (epreuveId, participantId) => {
+    // Get the result ID by filtering the results array with the given epreuveId and participantId
+    const result = results.find(result => result.epreuveId === epreuveId && result.participantId === participantId);
+    const id = result.id;
+    const apiUrl = `http://localhost:8080/api/resultats/${id}`;
+    try {
+      // Call delete result API endpoint to delete a result
+      await axios.delete(apiUrl, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      setResults(results.filter(result => result.id !== id));
+    } catch (error) {
+      console.error('Delete result failed:', error.message);
+      // Handle delete result error
+    }
+  }
+
   const value = {
     userID,
     sessionID,
@@ -674,6 +750,7 @@ export const AuthProvider = ({ children }) => {
     maxParticipantsTable,
     participants,
     controleurs,
+    results,
     user,
     role,
     login,
@@ -705,7 +782,11 @@ export const AuthProvider = ({ children }) => {
     getInfrastructures,
     createInfrastructure,
     updateInfrastructure,
-    deleteInfrastructure
+    deleteInfrastructure,
+    getResults,
+    createResult,
+    updateResult,
+    deleteResult,
   };
 
   return (
