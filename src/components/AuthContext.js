@@ -101,6 +101,7 @@ export const AuthProvider = ({ children }) => {
         getParticipants();
         getControllers();
         getInfrastructures();
+        getResults();
       } else {
         throw new Error('Authentication failed');
       }
