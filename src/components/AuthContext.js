@@ -15,9 +15,12 @@ export const AuthProvider = ({ children }) => {
   const [userRole, setUserRole] = useState(null);
   const [sessionID, setSessionID] = useState(null);
   const [epreuves, setEpreuves] = useState([]);
+  const [maxParticipantsTable, setMaxParticipantsTable] = useState([]);
   const [billets, setBillets] = useState([]);
   const [inscriptions, setInscriptions] = useState([]);
   const [delegation, setDelegation] = useState([]);
+  const [delegations, setDelegations] = useState([]);
+  const [participants, setParticipants] = useState([]);
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
 
@@ -53,9 +56,12 @@ export const AuthProvider = ({ children }) => {
 
     // Fetch epreuves if user is logged in and userRole is 'spectateur' or 'participant' or 'organisateur'
     if (sessionId) {
+      getUser(userId, userRole);
       getEpreuves();
       getBillets();
       getUser(userId, userRole);
+      getDelegations();
+      getParticipants();
     }
   }, []);
 
@@ -79,7 +85,16 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('sessionID', sessionId);
         localStorage.setItem('userId', userId);
         localStorage.setItem('userRole', userRole);
+        if (user.role) {
+          localStorage.setItem('OrganisateurRole', user.role);
+        } else {
+          localStorage.removeItem('OrganisateurRole');
+        }
         getUser(userId, userRole);
+        getEpreuves();
+        getBillets();
+        getDelegations();
+        getParticipants();
       } else {
         throw new Error('Authentication failed');
       }
@@ -102,6 +117,11 @@ export const AuthProvider = ({ children }) => {
       setEpreuves([]);
       setInscriptions([]);
       setDelegation([]);
+      setDelegations([]);
+      setParticipants([]);
+      setMaxParticipantsTable([]);
+      setBillets([]);
+      setRole(null);
       setUser(null);
       localStorage.removeItem('userId');
       localStorage.removeItem('sessionID');
@@ -125,14 +145,20 @@ export const AuthProvider = ({ children }) => {
         },
       });
       setSessionID(null);
-      localStorage.removeItem('sessionID');
-      localStorage.removeItem('userId');
-      localStorage.removeItem('userRole');
-      setBillets([]);
+      setUserID(null);
+      setUserRole(null);
       setEpreuves([]);
       setInscriptions([]);
       setDelegation([]);
+      setDelegations([]);
+      setParticipants([]);
+      setMaxParticipantsTable([]);
+      setBillets([]);
+      setRole(null);
       setUser(null);
+      localStorage.removeItem('userId');
+      localStorage.removeItem('sessionID');
+      localStorage.removeItem('userRole');
     } catch (error) {
       console.error('Delete account failed:', error.message);
       // Handle delete account error
@@ -150,6 +176,7 @@ export const AuthProvider = ({ children }) => {
       });
       console.log('Epreuves:', response.data);
       setEpreuves(response.data);
+      
     } catch (error) {
       console.error('Get epreuves failed:', error.message);
       // Handle get epreuves error
@@ -262,6 +289,133 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const getDelegations = async () => {
+    const apiUrl = 'http://localhost:8080/api/delegations';
+    try {
+      // Call get delegations API endpoint to fetch delegations
+      const response = await axios.get(apiUrl, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      console.log('Delegations:', response.data);
+      setDelegations(response.data);
+    } catch (error) {
+      console.error('Get delegations failed:', error.message);
+      // Handle get delegations error
+    }
+  }
+
+  const createDelegation = async (name, goldMedals, silverMedals, bronzeMedals) => {
+    const apiUrl = 'http://localhost:8080/api/delegations';
+    try {
+      // Call create delegation API endpoint to create a new delegation
+      const response = await axios.post(apiUrl, {
+          nom: name,
+          nombreMedailleOr: goldMedals,
+          nombreMedailleArgent: silverMedals,
+          nombreMedailleBronze: bronzeMedals,
+        }, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      console.log('Delegation created:', response.data);
+      setDelegation(response.data);
+    } catch (error) {
+      console.error('Create delegation failed:', error.message);
+      // Handle create delegation error
+    }
+  };
+
+  const removeDelegation = async (id) => {
+    const apiUrl = `http://localhost:8080/api/delegations/${id}`;
+    try {
+      // Call delete delegation API endpoint to delete a delegation
+      await axios.delete(apiUrl, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      setDelegations(delegations.filter(delegation => delegation.id !== id));
+    } catch (error) {
+      console.error('Remove delegation failed:', error.message);
+      // Handle remove delegation error
+    }
+  };
+
+  const createParticipant = async (firstName, lastName, email, delegation_id, password) => {
+    const apiUrl = 'http://localhost:8080/api/participants';
+    try {
+      // Call create participant API endpoint to create a new participant
+      const response = await axios.post(apiUrl, {
+          prenom: firstName,
+          nom: lastName,
+          email: email,
+          password: password,
+          delegationId: delegation_id,
+        }, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      console.log('Participant created:', response.data);
+    } catch (error) {
+      console.error('Create participant failed:', error.message);
+      // Handle create participant error
+    }
+  };
+
+  const applyMaxParticipants = async (epreuveId, maxParticipantsPerEpreuve) => {
+    const maxParticipants = {
+      epreuveId: epreuveId,
+      maxParticipants: maxParticipantsPerEpreuve,
+    };
+    setMaxParticipantsTable([...maxParticipantsTable, maxParticipants]);
+  }
+
+  const updateNbParticipants = async (epreuveId, nbParticipants) => {
+    // Find the epreuve with the given ID in the maxParticipantsTable
+    const epreuve = maxParticipantsTable.find(epreuve => epreuve.epreuveId === epreuveId);
+    // Update the object by adding new key-value pair if it doesn't exist or updating the value if it exists
+    epreuve.nbParticipants = nbParticipants;
+    // Update the maxParticipantsTable
+    setMaxParticipantsTable([...maxParticipantsTable]);
+  }
+
+  const getParticipants = async () => {
+    const apiUrl = 'http://localhost:8080/api/participants';
+    try {
+      // Call get participants API endpoint to fetch participants
+      const response = await axios.get(apiUrl, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      console.log('Participants:', response.data);
+      setParticipants(response.data);
+    } catch (error) {
+      console.error('Get participants failed:', error.message);
+      // Handle get participants error
+    }
+  }
+
+  const deleteParticipant = async (id) => {
+    const apiUrl = `http://localhost:8080/api/participants/${id}`;
+    try {
+      // Call delete participant API endpoint to delete a participant
+      await axios.delete(apiUrl, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      setParticipants(participants.filter(participant => participant.id !== id));
+    } catch (error) {
+      console.error('Delete participant failed:', error.message);
+      // Handle delete participant error
+    }
+  };
+
   const value = {
     userID,
     sessionID,
@@ -270,6 +424,9 @@ export const AuthProvider = ({ children }) => {
     billets,
     inscriptions,
     delegation,
+    delegations,
+    maxParticipantsTable,
+    participants,
     user,
     role,
     login,
@@ -280,6 +437,12 @@ export const AuthProvider = ({ children }) => {
     getEpreuveById,
     addInscription,
     removeInscription,
+    createDelegation,
+    removeDelegation,
+    createParticipant,
+    applyMaxParticipants,
+    updateNbParticipants,
+    deleteParticipant,
   };
 
   return (
