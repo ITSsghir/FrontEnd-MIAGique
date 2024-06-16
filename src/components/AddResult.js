@@ -19,9 +19,8 @@ const AddResult = () => {
     try {
 
       console.log('Adding result', participantId, epreuveId, temps, position);
-      await createResult(participantId, epreuveId, temps, position);
+      await createResult(epreuveId, participantId, temps, position);
       // Clean up form
-
       setMessage('Résultat ajouté avec succès');
       setMessageColor('green');
     } catch (error) {
@@ -68,7 +67,7 @@ const AddResult = () => {
         <input type="text" value={temps} onChange={(e) => setTemps(e.target.value)} required />
         <label>Position:</label>
         <input type="number" value={position} onChange={(e) => setPosition(e.target.value)} required />
-        <button type="submit" onClick={handleSubmit}>Ajouter</button>
+        <button type="submit" onClick={handleSubmit}>Valider</button>
       </form>
     </div>
   );
