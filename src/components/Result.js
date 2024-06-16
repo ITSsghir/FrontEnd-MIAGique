@@ -1,10 +1,12 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useAuth } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function Result() {
   const { results, getResults } = useAuth();
-  getResults();
+  useEffect(() => {
+    getResults();
+  }, [getResults]);
 
   const navigate = useNavigate();
 
@@ -23,8 +25,7 @@ export default function Result() {
         <thead>
           <tr>
             <th>ID</th>
-            <th>Epreuve</th>  
-            <th>Date</th>
+            <th>Epreuve</th>
             <th>Participant</th>
             <th>Temps</th>
             <th>Position</th>
@@ -36,7 +37,6 @@ export default function Result() {
               <td>{result.id}</td>
               {/* Display the epreuve name if it exists, otherwise display 'N/A' */}
               <td>{result.epreuve ? result.epreuve.nom : 'N/A'}</td>
-              <td>{result.date ? new Date(result.date).toLocaleDateString() : 'N/A'}</td>
               <td>{result.participant ? `${result.participant.prenom} ${result.participant.nom}` : 'N/A'}</td>
               <td>{result.temps}</td>
               <td>{result.position}</td>
