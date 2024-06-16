@@ -5,8 +5,9 @@ import { useAuth } from './AuthContext';
 const RemoveDelegation = () => {
   const [messageColor, setMessageColor] = useState('green');
   const [message, setMessage] = useState('');
-  const { delegations, removeDelegation } = useAuth();
+  const { delegations, removeDelegation, getDelegations } = useAuth();
   const navigate = useNavigate();
+  getDelegations();
 
   const handleRemove = async (id) => {
     try {
