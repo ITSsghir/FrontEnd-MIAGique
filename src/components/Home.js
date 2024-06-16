@@ -9,7 +9,7 @@ const Home = () => {
 
   const renderMessage = (billet) => {
     if (billet.etat === 'Validé') {
-      return 'Billet validé avec succès';
+      return 'Billet déjà validé';
     } else if (billet.etat === 'Annulé') {
       return 'Billet annulé, impossible de valider';
     } else if (billet.etat === 'Réservé') {
@@ -53,20 +53,20 @@ const Home = () => {
     const ticket = billets.find(billet => billet.id === billetId);
     if (!ticket) {
       console.error('Ticket not found:', billetId);
-      setMessage('Billet non trouvé');
+      setMessage(renderMessage(ticket));
       return;
     }
     if (ticket.etat === 'Validé') {
       console.log('Ticket already validated:', billetId);
-      setMessage('Billlet déjà validé');
+      setMessage(renderMessage(ticket));
       return;
     } else if (ticket.etat === 'Annulé') {
       console.log('Ticket is cancelled:', billetId);
-      setMessage('Billlet annulé, impossible de valider');
+      setMessage(renderMessage(ticket));
       return;
     } else if (ticket.etat === 'Réservé') {
       console.log('Ticket is reserved:', billetId);
-      setMessage('Billlet réservé, veuillez payer pour pouvoir valider');
+      setMessage(renderMessage(ticket));
       return;
     }
 
