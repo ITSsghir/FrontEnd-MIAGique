@@ -1,56 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
 const ManageEvents = () => {
-  const [events, setEvents] = useState([]);
+  const { epreuves, updateEpreuve, deleteEpreuve } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      const result = await axios.get('http://localhost:8080/api/events');
-      setEvents(result.data);
-    };
-    fetchEvents();
-  }, []);
+  const [message, setMessage] = useState('');
+  const [messageColor, setMessageColor] = useState('green');
+
 
   const handleRemove = async (id) => {
-    try {
-      await axios.delete(`http://localhost:8080/api/events/${id}`);
-      setEvents(events.filter(event => event.id !== id));
-      alert('Épreuve supprimée avec succès');
-    } catch (error) {
+   try {
+     await deleteEpreuve(id);
+     setMessage('Épreuve supprimée avec succès');
+     setMessageColor('green');
+   } catch (error) {
       console.error('Erreur lors de la suppression de l\'épreuve', error);
-      alert('Erreur lors de la suppression de l\'épreuve');
+      setMessage('Erreur lors de la suppression de l\'épreuve');
+      setMessageColor('red');
     }
+
   };
 
   const handleUpdate = async (id, newDate) => {
     try {
-      await axios.put(`http://localhost:8080/api/events/${id}`, {
-        date: newDate
-      });
-      alert('Date de l\'épreuve mise à jour avec succès');
+      const epreuve = epreuves.find(epreuve => epreuve.id === id);
+      await updateEpreuve(id, epreuve.nom, newDate, epreuve.infrastructure, epreuve.nombrePlaces);
+      setMessage('Date de l\'épreuve modifiée avec succès');
+      setMessageColor('green');
     } catch (error) {
       console.error('Erreur lors de la mise à jour de la date de l\'épreuve', error);
-      alert('Erreur lors de la mise à jour de la date de l\'épreuve');
+      setMessage('Erreur lors de la mise à jour de la date de l\'épreuve');
+      setMessageColor('red');
     }
+
   };
 
-  const [selectedEvent, setSelectedEvent] = useState(null);
   const [newDate, setNewDate] = useState('');
-
-  const handleSelect = (event) => {
-    setSelectedEvent(event);
-    setNewDate(event.date);
-  };
-
-  const handleLogout = () => {
-    navigate('/login');
-  };
-
   const handleBack = () => {
     navigate('/organizer-home');
+  };
+
+  const displayData = (date) => {
+    const dateArray = date.split('T');
+    const datePart = dateArray[0];
+    const timeArray = dateArray[1].split(':');
+    const timePart = timeArray[0] + ':' + timeArray[1];
+    return datePart + ' - ' + timePart;
   };
 
   return (
@@ -58,12 +55,14 @@ const ManageEvents = () => {
       <header className="form-header">
         <h1>MIAGique</h1>
         <button className="back" onClick={handleBack}>Retour</button>
-        <button className="logout" onClick={handleLogout}>Logout</button>
       </header>
       <h2>Gérer le Calendrier des Épreuves</h2>
+      <p style={{ color: messageColor }}>{message}</p>
+      {'\n'}
       <table>
         <thead>
           <tr>
+            <th></th>
             <th>ID</th>
             <th>Nom de l'épreuve</th>
             <th>Date</th>
@@ -73,34 +72,24 @@ const ManageEvents = () => {
           </tr>
         </thead>
         <tbody>
-          {events.map(event => (
-            <tr key={event.id}>
-              <td>{event.id}</td>
-              <td>{event.name}</td>
-              <td>{event.date}</td>
-              <td>{event.venue}</td>
-              <td>{event.availableSeats}</td>
+          {epreuves.map(epreuve => (
+            <tr key={epreuve.id}>
+              {/* implement checkbox for each row, and when i select if it changes the infos in the row to input fields */}
+              <td><input type="checkbox" /></td>
+              <td>{epreuve.id}</td>
+              <td>{epreuve.nom}</td>
+              <td>{displayData(epreuve.date)}</td>
+              <td>{epreuve.infrastructure.nom}</td>
+              <td>{epreuve.nombrePlaces}</td>
               <td>
-                <button onClick={() => handleRemove(event.id)}>Supprimer</button>
-                <button onClick={() => handleSelect(event)}>Sélectionner</button>
+                <input type="datetime-local" value={newDate} onChange={(e) => setNewDate(e.target.value)} />
+                <button onClick={() => handleUpdate(epreuve.id, newDate)}>Modifier la date</button>
+                <button style={{ backgroundColor: "red" }} onClick={() => handleRemove(epreuve.id)}>Supprimer</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      {selectedEvent && (
-        <div className="form-container">
-          <h3>Modifier la Date de l'Épreuve</h3>
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            handleUpdate(selectedEvent.id, newDate);
-          }}>
-            <label>Nouvelle Date:</label>
-            <input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} required />
-            <button type="submit">Valider</button>
-          </form>
-        </div>
-      )}
     </div>
   );
 };
