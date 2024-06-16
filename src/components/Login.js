@@ -30,7 +30,9 @@ const Login = () => {
 
   return (
     <div className="login-container">
+      <button style={{float: 'right', backgroundColor: 'black', color: 'white'}} onClick={() => navigate('/results')}>Résultats</button> 
       <h2>Login</h2>
+      
       <form onSubmit={handleSubmit}>
         <div>
           <label>Email:</label>
