@@ -67,6 +67,7 @@ const Signup = () => {
 
   return (
     <div className="signup-container">
+      <button style={{float: 'right', backgroundColor: 'black', color: 'white'}} onClick={() => navigate('/results')}>Résultats</button> 
       <h2>Sign Up</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <form>
