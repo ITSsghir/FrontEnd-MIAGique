@@ -21,6 +21,7 @@ export const AuthProvider = ({ children }) => {
   const [delegation, setDelegation] = useState([]);
   const [delegations, setDelegations] = useState([]);
   const [participants, setParticipants] = useState([]);
+  const [infrastructures, setInfrastructures] = useState([]);
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
 
@@ -62,6 +63,7 @@ export const AuthProvider = ({ children }) => {
       getUser(userId, userRole);
       getDelegations();
       getParticipants();
+      getInfrastructures();
     }
   }, []);
 
@@ -95,6 +97,7 @@ export const AuthProvider = ({ children }) => {
         getBillets();
         getDelegations();
         getParticipants();
+        getInfrastructures();
       } else {
         throw new Error('Authentication failed');
       }
@@ -120,6 +123,7 @@ export const AuthProvider = ({ children }) => {
       setDelegations([]);
       setParticipants([]);
       setMaxParticipantsTable([]);
+      setInfrastructures([]);
       setBillets([]);
       setRole(null);
       setUser(null);
@@ -153,6 +157,7 @@ export const AuthProvider = ({ children }) => {
       setDelegations([]);
       setParticipants([]);
       setMaxParticipantsTable([]);
+      setInfrastructures([]);
       setBillets([]);
       setRole(null);
       setUser(null);
@@ -164,6 +169,24 @@ export const AuthProvider = ({ children }) => {
       // Handle delete account error
     }
   }
+
+  const getInfrastructures = async () => {
+    const apiUrl = 'http://localhost:8080/api/infrastructuresportives';
+    try {
+      // Call get infrastructures API endpoint to fetch infrastructures
+      const response = await axios.get(apiUrl, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      console.log('Infrastructures:', response.data);
+      setInfrastructures(response.data);
+    } catch (error) {
+      console.error('Get infrastructures failed:', error.message);
+      // Handle get infrastructures error
+    }
+  }
+
 
   const getEpreuves = async () => {
     const apiUrl = apiUrls.epreuves;
@@ -197,6 +220,78 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Get epreuve by ID failed:', error.message);
       // Handle get epreuve by ID error
+    }
+  };
+
+  const createEpreuve = async (name, date, infrastructure, nbPlaces) => {
+    const apiUrl = apiUrls.epreuves;
+    try {
+      // Call create epreuve API endpoint to create a new epreuve
+      const response = await axios.post(apiUrl, {
+          nom: name,
+          date: date,
+          infrastructure: infrastructure,
+          nombrePlaces: nbPlaces,
+        }, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      console.log('Epreuve created:', response.data);
+      getEpreuves();
+    } catch (error) {
+      console.error('Create epreuve failed:', error.message);
+      // Handle create epreuve error
+    }
+  };
+
+  const updateEpreuve = async (epreuveId, name, date, infrastructure, nbPlaces) => {
+    const apiUrl = `${apiUrls.epreuves}/${epreuveId}`;
+    // check if the epreuveId is valid
+    if (!epreuveId) {
+      console.error('Epreuve ID is required');
+      return;
+    }
+    // Check if nbPlaces is a number
+    if (isNaN(nbPlaces)) {
+      console.error('Nombre de places must be a number');
+      return;
+    }
+    // If one field is not provided, keep the existing value
+    const updatedEpreuve = {
+      nom: name,
+      date: date,
+      infrastructure: infrastructure,
+      nombrePlaces: nbPlaces,
+    };
+    try {
+      // Call update epreuve API endpoint to update epreuve details
+      const response = await axios.put(apiUrl, updatedEpreuve, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      console.log('Epreuve updated:', response.data);
+      getEpreuves();
+    } catch (error) {
+      console.error('Update epreuve failed:', error.message);
+      // Handle update epreuve error
+    }
+  };
+
+  const deleteEpreuve = async (epreuveId) => {
+    const apiUrl = `${apiUrls.epreuves}/${epreuveId}`;
+    try {
+      // Call delete epreuve API endpoint to delete an epreuve
+      await axios.delete(apiUrl, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      setEpreuves(epreuves.filter(epreuve => epreuve.id !== epreuveId));
+    } catch (error) {
+      console.error('Delete epreuve failed:', error.message);
+      // Handle delete epreuve error
     }
   };
 
@@ -400,6 +495,27 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const updateParticipant = async (id, firstName, lastName, email, delegation_id) => {
+    const apiUrl = `http://localhost:8080/api/participants/${id}`;
+    try {
+      // Call update participant API endpoint to update a participant
+      const response = await axios.put(apiUrl, {
+          prenom: firstName,
+          nom: lastName,
+          email: email,
+          delegationId: delegation_id,
+        }, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      console.log('Participant updated:', response.data);
+    } catch (error) {
+      console.error('Update participant failed:', error.message);
+      // Handle update participant error
+    }
+  }
+
   const deleteParticipant = async (id) => {
     const apiUrl = `http://localhost:8080/api/participants/${id}`;
     try {
@@ -432,17 +548,24 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     deleteAccount,
+    infrastructures,
     createBillet,
     updateBillet,
     getEpreuveById,
+    createEpreuve,
+    updateEpreuve,
+    deleteEpreuve,
     addInscription,
     removeInscription,
+    getDelegations,
     createDelegation,
     removeDelegation,
     createParticipant,
     applyMaxParticipants,
     updateNbParticipants,
+    getParticipants,
     deleteParticipant,
+    updateParticipant
   };
 
   return (
