@@ -37,8 +37,8 @@ const Signup = () => {
 
     try {
       const response = await axios.post(apiUrl, {
-        firstName: firstName,
-        lastName: lastName,
+        prenom: firstName,
+        nom: lastName,
         email: email,
         password: password,
       });
