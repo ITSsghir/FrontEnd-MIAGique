@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
@@ -10,8 +10,12 @@ const AddParticipant = () => {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { delegations, createParticipant } = useAuth();
+  const { delegations, createParticipant, getDelegations } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    getDelegations();
+  }, [delegations, getDelegations]);
 
   // Create a dropdown list of delegations
   const [delegationName, setDelegationName] = useState('');
@@ -38,7 +42,7 @@ const AddParticipant = () => {
   };
 
   const handleBack = () => {
-    navigate('/organizer-home');
+    navigate('/');
   };
 
   return (

@@ -19,7 +19,7 @@ const AddController = () => {
         email
       });
       alert('Contrôleur ajouté avec succès');
-      navigate('/organizer-home');
+      navigate('/');
     } catch (error) {
       console.error('Erreur lors de l\'ajout du contrôleur', error);
       alert('Erreur lors de l\'ajout du contrôleur');
