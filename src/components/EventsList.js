@@ -175,8 +175,10 @@ const EventsList = () => {
           <tr>
             <td>{epreuves.id}</td>
             <td>{epreuves.nom}</td>
-            <td>{epreuves.date}</td>
-            <td>{epreuves.infrastructure}</td>
+            {/*Display the event date in the format: dd/mm/yyyy - HH:MM*/}
+            <td>{new Date(epreuves.date).toLocaleString('fr-FR')}</td>
+            {/*Display the event infrastructure name*/}
+            <td>{epreuves.infrastructure.nom}</td>
             <td>{epreuves.nombrePlaces}</td>
             <td>
               {userRole === 'spectateur' && (
