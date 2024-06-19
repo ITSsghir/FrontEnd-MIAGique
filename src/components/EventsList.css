@@ -84,3 +84,44 @@ body {
     color: black;
   }
   
+  .reserve-button {
+    background-color: 'green';
+    color: white;
+  }
+
+  .reserve-button:hover {
+    background-color: 'lightgreen'
+  }
+
+  .reserve-button.disabled {
+    background-color: 'lightgreen';
+    color: black;
+  }
+
+  .pay-button {
+    background-color: 'blue';
+    color: white;
+  }
+
+  .pay-button:hover {
+    background-color: 'lightblue'
+  }
+
+  .pay-button.disabled {
+    background-color: 'lightblue';
+    color: black;
+  }
+
+  .cancel-button {
+    background-color: 'red';
+    color: white;
+  }
+
+  .cancel-button:hover {
+    background-color: 'lightred'
+  }
+
+  .cancel-button.disabled {
+    background-color: 'lightred';
+    color: black;
+  }
