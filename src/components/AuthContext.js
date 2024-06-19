@@ -17,11 +17,12 @@ export const AuthProvider = ({ children }) => {
   const [epreuves, setEpreuves] = useState([]);
   const [maxParticipantsTable, setMaxParticipantsTable] = useState([]);
   const [billets, setBillets] = useState([]);
-  const [inscriptions, setInscriptions] = useState([]);
+  const [AllInscriptions, setAllInscriptions] = useState([]);
   const [delegation, setDelegation] = useState([]);
   const [delegations, setDelegations] = useState([]);
   const [participants, setParticipants] = useState([]);
   const [controleurs, setControleurs] = useState([]);
+  const [spectateurs, setSpectateurs] = useState([]);
   const [infrastructures, setInfrastructures] = useState([]);
   const [results, setResults] = useState([]);
   const [user, setUser] = useState(null);
@@ -58,6 +59,13 @@ export const AuthProvider = ({ children }) => {
       setRole(null);
     }
 
+    const stats = localStorage.getItem('statistics');
+    if (stats) {
+      setStatistics(JSON.parse(stats));
+    } else {
+      setStatistics([]);
+    }
+    
     // Fetch epreuves if user is logged in and userRole is 'spectateur' or 'participant' or 'organisateur'
     if (sessionId) {
       getUser(userId, userRole);
@@ -68,6 +76,7 @@ export const AuthProvider = ({ children }) => {
       getParticipants();
       getInfrastructures();
       getControllers();
+      getSpectateurs();
     }
     getResults();
   }, []);
@@ -103,6 +112,7 @@ export const AuthProvider = ({ children }) => {
         getControllers();
         getInfrastructures();
         getResults();
+        getSpectateurs();
       } else {
         throw new Error('Authentication failed');
       }
@@ -123,7 +133,7 @@ export const AuthProvider = ({ children }) => {
       setUserID(null);
       setUserRole(null);
       setEpreuves([]);
-      setInscriptions([]);
+      setAllInscriptions([]);
       setDelegation([]);
       setDelegations([]);
       setParticipants([]);
@@ -133,6 +143,7 @@ export const AuthProvider = ({ children }) => {
       setBillets([]);
       setRole(null);
       setUser(null);
+      setSpectateurs([]);
       localStorage.removeItem('userId');
       localStorage.removeItem('sessionID');
       localStorage.removeItem('userRole');
@@ -157,7 +168,7 @@ export const AuthProvider = ({ children }) => {
       setUserID(null);
       setUserRole(null);
       setEpreuves([]);
-      setInscriptions([]);
+      setAllInscriptions([]);
       setDelegation([]);
       setDelegations([]);
       setParticipants([]);
@@ -167,6 +178,7 @@ export const AuthProvider = ({ children }) => {
       setBillets([]);
       setRole(null);
       setUser(null);
+      setSpectateurs([]);
       localStorage.removeItem('userId');
       localStorage.removeItem('sessionID');
       localStorage.removeItem('userRole');
@@ -440,11 +452,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   const addInscription = (epreuveId) => {
-    setInscriptions([...inscriptions, epreuveId]);
+    const inscription = {
+      epreuveId: epreuveId,
+      participantId: userID,
+    };
+    setAllInscriptions([...AllInscriptions, inscription]);
   }
 
   const removeInscription = (epreuveId) => {
-    setInscriptions(inscriptions.filter((id) => id !== epreuveId));
+    // Find the inscription with the given epreuveId and participantId in the AllInscriptions array
+    const inscriptionDeleted = AllInscriptions.find(inscription => inscription.epreuveId === epreuveId && inscription.participantId === userID);
+    // Remove the inscription from the AllInscriptions array
+    setAllInscriptions(AllInscriptions.filter(inscription => inscription !== inscriptionDeleted));
   }
 
   const getUser = async (userId, userrole) => {
@@ -786,15 +805,30 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const getSpectateurs = () => {
+    const apiUrl = 'http://localhost:8080/api/spectateurs';
+    try {
+      // Call get spectateurs API endpoint to fetch spectateurs
+      const response = axios.get(apiUrl);
+      setSpectateurs(response.data);
+    } catch (error) {
+      console.error('Get spectateurs failed:', error.message);
+      // Handle get spectateurs error
+    }
+  }
+
   const updateStatistics = (billet) => {
     const epreuve = epreuves.find(epreuve => epreuve.id === billet.epreuve.id);
+    const spectateur = spectateurs.find(spectateur => spectateur.id === userID);
     const vente = {
       id: billet.id,
       epreuve: epreuve,
       prix: billet.prix,
       date: new Date().toLocaleString(),
+      spectateur: spectateur,
     };
     setStatistics(prevStats => [...prevStats, vente]);
+    localStorage.setItem('statistics', JSON.stringify(statistics));
   };
 
   const value = {
@@ -803,7 +837,7 @@ export const AuthProvider = ({ children }) => {
     userRole,
     epreuves,
     billets,
-    inscriptions,
+    AllInscriptions,
     delegation,
     delegations,
     maxParticipantsTable,
@@ -817,6 +851,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     deleteAccount,
     infrastructures,
+    getBillets,
     createBillet,
     updateBillet,
     getEpreuves,
