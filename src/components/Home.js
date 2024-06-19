@@ -25,7 +25,7 @@ const Home = () => {
   const navigate = useNavigate();
   const [message, setMessage] = useState('');
   const [activeSection, setActiveSection] = useState('');
-  const { logout, deleteAccount, sessionID, userRole, role, billets, updateBillet } = useAuth();
+  const { getEpreuves, logout, deleteAccount, sessionID, userRole, role, billets, updateBillet } = useAuth();
 
   const handleSectionChange = (section) => {
     setActiveSection(section);
@@ -159,7 +159,7 @@ const Home = () => {
             <div className="spectator-home-content">
               <h2>Welcome, Spectator</h2>
               {message && <p className="message">{message}</p>}
-              <button type="button" className="secondary" onClick={() => navigate('/events-list')}>Consulter le programme des épreuves</button>
+              <button type="button" className="secondary" onClick={() => {navigate('/events-list'); getEpreuves();}}>Consulter le programme des épreuves</button>
               <button type="button" className="secondary" onClick={() => navigate('/tickets')}>Voir billets</button>
               <button type="button" className="danger" onClick={handleDeleteAccount}>Supprimer compte</button>
             </div>
