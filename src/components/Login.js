@@ -4,8 +4,8 @@ import './Login.css'; // Import the CSS file for styling
 import { useAuth } from './AuthContext';
 
 const Login = () => {
-  const [message, setMessage] = useState(''); // Add this line
-  const [messageColor, setMessageColor] = useState(''); // Add this line
+  const [message, setMessage] = useState('');
+  const [messageColor, setMessageColor] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
