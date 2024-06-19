@@ -14,7 +14,7 @@ const Signup = () => {
   const navigate = useNavigate();
   const { login, sessionID } = useAuth();
 
-  const apiUrl = 'http://localhost:8080/register/' + role; 
+  const apiUrl = `http://localhost:8080/register/${role}`;
 
   useEffect(() => {
     const localSessionID = localStorage.getItem('sessionID');
@@ -34,43 +34,54 @@ const Signup = () => {
     setRole(e.target.value);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log('URL: ', apiUrl);
+  const handleRegister = async () => {
     if (!role || !email || !password) {
       setError('All fields are required');
-      return;
+      return false;
     }
 
     try {
       const response = await axios.post(apiUrl, {
         prenom: firstName,
         nom: lastName,
-        email: email,
-        password: password,
+        email,
+        password,
       });
-
-      console.log(response);
 
       if (response.status !== 200) {
         throw new Error('Registration failed');
       }
-
-      try {
-        await login(email, password);
-      } catch (error) {
-        console.error('Login failed:', error.message);
-        setError('Login failed');
-        return;
-      }
-
-      navigate('/');
-
+      return true;
     } catch (error) {
       console.error('Registration error:', error);
       setError('Registration failed');
+      return false;
     }
-  }
+  };
+
+  const handleLogin = async () => {
+    try {
+      await login(email, password);
+    } catch (error) {
+      console.error('Login failed:', error.message);
+      setError('Login failed');
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    const registered = await handleRegister();
+    if (registered) {
+      const loggedIn = await handleLogin();
+      if (loggedIn) {
+        navigate('/');
+      }
+    }
+  };
 
   return (
     <div className="signup-container">
