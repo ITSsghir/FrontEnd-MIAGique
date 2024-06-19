@@ -29,7 +29,6 @@ const AddDelegation = () => {
       setMessage('Erreur lors de l’ajout de la délégation');
       setMessageColor('red');
     }
-
   };
 
   const handleBack = () => {
