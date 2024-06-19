@@ -6,11 +6,24 @@ import './EventsList.css'; // Ensure the CSS file is correctly linked
 
 const EventsList = () => {
   const navigate = useNavigate();
-  const { epreuves, getEpreuves, billets, createBillet, updateBillet, inscriptions, addInscription, removeInscription, maxParticipantsTable, updateNbParticipants, createResult, deleteResult, updateStatistics } = useAuth();
+  const { epreuves, getEpreuves, billets, createBillet, updateBillet, AllInscriptions, addInscription, removeInscription, maxParticipantsTable, updateNbParticipants, createResult, deleteResult, updateStatistics, getBillets } = useAuth();
   const [message, setMessage] = useState('');
+  
+  const [inscriptions, setInscriptions] = useState([]);
+  // Parcourir AllInscriptions pour trouver les inscriptions de l'utilisateur connecté (s'il est un participant)
+  useEffect(() => {
+    const userId = localStorage.getItem('userId');
+    const userRole = localStorage.getItem('userRole');
+    if (userId && userRole === 'participant') {
+      const userInscriptions = AllInscriptions.filter(inscription => inscription.participantId === userId);
+      setInscriptions(userInscriptions.map(inscription => inscription.epreuve.id));
+    }
+  }, [AllInscriptions]);
+
   const [messageColor, setMessageColor] = useState('green');
   const userRole = localStorage.getItem('userRole');
   getEpreuves();
+  getBillets();
 
   const timeDifference = (eventId) => {
     const currentTime = new Date().getTime();
@@ -47,7 +60,7 @@ const EventsList = () => {
 
   const handlePay = (eventId) => {
     if (!eventId) return;
-    const existingBillet = billets?.find(billet => billet.epreuve.id === eventId);
+    const existingBillet = billets.find(billet => billet.epreuve.id === eventId);
     if (existingBillet) {
       updateBillet(existingBillet.id, 'Payé');
       updateStatistics(existingBillet);
@@ -64,11 +77,13 @@ const EventsList = () => {
   };
 
   const handleInscription = (eventId) => {
+    // Vérifier si l'utilisateur est déjà inscrit pour cet événement (inscriptions is an array of objects containing the IDs of the events the user is registered for)
     if (inscriptions.includes(eventId)) {
-      setMessage('Déjà inscrit pour cet événement');
+      setMessage('Vous êtes déjà inscrit à cet événement');
       setMessageColor('red');
       return;
     }
+    
 
     const maxParticipants = maxParticipantsTable.find(item => item.epreuveId === eventId);
     if (maxParticipants && maxParticipants.maxParticipants >= maxParticipants.nbParticipants) {
@@ -128,33 +143,31 @@ const EventsList = () => {
               <td>
                 {userRole === 'spectateur' && (
                   <>
-                    {!billets || !billets.find(billet => billet.epreuve.id === epreuve.id) ? (
+                    {(!billets || !billets.find(billet => billet.epreuve.id === epreuve.id)) && (
                       <>
-                        <button className="action-button" style={{ backgroundColor: 'green', color: 'white' }} onClick={() => handleReserve(epreuve.id)}>
+                        <button className="reserve-button" style={{ backgroundColor: 'green', color: 'white' }} onClick={() => handleReserve(epreuve.id)}>
                           Réserver
                         </button>
-                        <button className="action-button" style={{ backgroundColor: 'blue' }} disabled>
-                          Payer
-                        </button>
                       </>
-                    ) : (
-                      billets.find(billet => billet.epreuve.id === epreuve.id && billet.etat === 'Réservé') ? (
-                        <>
-                          <button style={{ backgroundColor: '#b3ffb3' }} disabled>
-                            Réservé
-                          </button>
-                          <button style={{ backgroundColor: 'blue', color: 'white' }} onClick={() => handlePay(epreuve.id)}>
-                            Payer
-                          </button>
-                        </>
-                      ) : (
-                        billets.find(billet => billet.epreuve.id === epreuve.id && billet.etat === 'Payé') && (
-                          <p>
-                            Payé
-                          </p>
-                        )
-                      )
                     )}
+                    {billets && billets.find(billet => billet.epreuve.id === epreuve.id) && (
+                      <>
+                        {billets.find(billet => billet.epreuve.id === epreuve.id).etat === 'Réservé' && (
+                          <>
+                            <button className="pay-button" style={{ backgroundColor: 'blue', color: 'white' }} onClick={() => handlePay(epreuve.id)}>
+                              Payer
+                            </button>
+                          </>
+                        )}
+                        {billets.find(billet => billet.epreuve.id === epreuve.id).etat === 'Payé' && (
+                          <>
+                            <p>
+                              Ticket payé
+                            </p>
+                          </>
+                        )}
+                      </>
+                      )}
                   </>
                 )}
                 {userRole === 'participant' && (
