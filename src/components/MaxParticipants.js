@@ -4,9 +4,9 @@ import { useAuth } from './AuthContext';
 
 const MaxParticipants = () => {
   // MaxParticipants is a number
-  const { epreuves , applyMaxParticipants } = useAuth();
+  const { epreuves , applyMaxParticipants, maxParticipantsTable } = useAuth();
   const [epreuveName, setEpreuveName] = useState('');
-  const [maxParticipants, setMaxParticipants] = useState('');
+  const [maxParticipants, setMaxParticipants] = useState(0);
   const [messageColor, setMessageColor] = useState('green');
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
@@ -23,6 +23,7 @@ const MaxParticipants = () => {
       setMaxParticipants('');
       setMessage("Nombre maximal de participants défini avec succès pour l’épreuve " + epreuveName);
       setMessageColor('green');
+      console.log('Max participants applied successfully:', epreuveName, maxParticipants);
     } catch (error) {
       console.error('Erreur lors de la définition du nombre maximal de participants', error);
       setMessage("Erreur lors de la définition du nombre maximal de participants pour l’épreuve " + epreuveName);
@@ -45,13 +46,22 @@ const MaxParticipants = () => {
       <form onSubmit={handleSubmit}>
         <label>Épreuve:</label>
         { /* Create a dropdown list of epreuves */}
-        <select value={epreuveName} onChange={(e) => setEpreuveName(e.target.value)} required>
+        <select value={epreuveName} onChange={(e) => {
+          setEpreuveName(e.target.value);
+          if (!e.target.value) {
+            setMaxParticipants(0);
+            return;
+          }
+          const maxParticipantsPerEpreuve = maxParticipantsTable.find(item => item.epreuveId === epreuves.find(epreuve => epreuve.nom === e.target.value).id);
+          setMaxParticipants(maxParticipantsPerEpreuve ? maxParticipantsPerEpreuve.maxParticipants : 0);
+        }}>
           <option value="">Choisissez une épreuve</option>
           {epreuves.map(epreuve => (
             <option key={epreuve.id} value={epreuve.nom}>{epreuve.nom}</option>
           ))}
         </select>
         <label>Nombre Maximal de Participants:</label>
+        {/* Input field for the maxParticipants (get the value from the maxParticipantsTable, if it exists, otherwise set it to 0) */}
         <input type="number" value={maxParticipants} onChange={(e) => setMaxParticipants(e.target.value)} required />
         <button type="submit">Valider</button>
       </form>
