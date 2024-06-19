@@ -26,6 +26,7 @@ export const AuthProvider = ({ children }) => {
   const [results, setResults] = useState([]);
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
+  const [statistics, setStatistics] = useState([]);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -298,7 +299,7 @@ export const AuthProvider = ({ children }) => {
     const apiUrl = apiUrls.epreuves;
     try {
       // Call create epreuve API endpoint to create a new epreuve
-      const response = await axios.post(apiUrl, {
+      await axios.post(apiUrl, {
           nom: name,
           date: date,
           infrastructure: infrastructure,
@@ -415,6 +416,22 @@ export const AuthProvider = ({ children }) => {
           'session-id': sessionID,
         },
       });
+
+      if (etat === 'Payé') {
+        await updateEpreuve(response.data.epreuveId, response.data.epreuve.nom, response.data.epreuve.date, response.data.epreuve.infrastructure, response.data.epreuve.nombrePlaces - 1);
+        const epreuve = epreuves.find(epreuve => epreuve.id === response.data.epreuveId);
+        const vente = {
+          id: response.data.billetId,
+          epreuve: epreuve,
+          prix: response.data.prix,
+          date: new Date(response.data.date).toLocaleString(),
+        }
+        setStatistics([...vente]);
+      } else if (etat === 'Annulé') {
+        await updateEpreuve(response.data.epreuveId, response.data.epreuve.nom, response.data.epreuve.date, response.data.epreuve.infrastructure, response.data.epreuve.nombrePlaces + 1);
+        // Remove the statistics entry for the cancelled ticket
+        setStatistics(statistics.filter(statistic => statistic.id !== billetId));
+      }
       getBillets();
     } catch (error) {
       console.error('Update billet failed:', error.message);
@@ -769,6 +786,17 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const updateStatistics = (billet) => {
+    const epreuve = epreuves.find(epreuve => epreuve.id === billet.epreuve.id);
+    const vente = {
+      id: billet.id,
+      epreuve: epreuve,
+      prix: billet.prix,
+      date: new Date().toLocaleString(),
+    };
+    setStatistics(prevStats => [...prevStats, vente]);
+  };
+
   const value = {
     userID,
     sessionID,
@@ -784,6 +812,7 @@ export const AuthProvider = ({ children }) => {
     results,
     user,
     role,
+    statistics,
     login,
     logout,
     deleteAccount,
@@ -819,6 +848,7 @@ export const AuthProvider = ({ children }) => {
     createResult,
     updateResult,
     deleteResult,
+    updateStatistics,
   };
 
   return (
