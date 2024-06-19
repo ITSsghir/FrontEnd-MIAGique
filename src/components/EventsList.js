@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-import './EventsList.css'; // Ajoutez ceci pour inclure le fichier CSS
+import './EventsList.css'; // Ensure the CSS file is correctly linked
 
 const EventsList = () => {
   const navigate = useNavigate();
@@ -9,6 +9,7 @@ const EventsList = () => {
   const [message, setMessage] = useState('');
   const [messageColor, setMessageColor] = useState('green');
   const userRole = localStorage.getItem('userRole');
+  getEpreuves();
 
   const timeDifference = (eventId) => {
     const currentTime = new Date().getTime();
@@ -22,47 +23,42 @@ const EventsList = () => {
     if (!localSessionID) {
       navigate('/login');
     }
-    getEpreuves();
-  }, [navigate]);
+  }, [navigate, getEpreuves]);
 
   const handleReserve = (eventId) => {
     if (!eventId) return;
-    if (!billets) {
+    const existingBillet = billets?.find(billet => billet.epreuve.id === eventId);
+    if (existingBillet) {
+      if (existingBillet.etat === 'Réservé' || existingBillet.etat === 'Payé') {
+        setMessage('Ticket déjà réservé pour cet événement');
+        setMessageColor('red');
+      } else {
+        updateBillet(existingBillet.id, 'Réservé');
+        setMessage('Ticket réservé avec succès');
+        setMessageColor('green');
+      }
+    } else {
       createBillet(eventId);
       setMessage('Ticket créé et réservé avec succès');
       setMessageColor('green');
-    } else {
-      const existingBillet = billets.find(billet => billet.epreuve.id === eventId);
-      if (existingBillet) {
-        if (existingBillet.etat === 'Réservé' || existingBillet.etat === 'Payé') {
-          setMessage('Ticket déjà réservé pour cet événement');
-          setMessageColor('red');
-        } else {
-          updateBillet(existingBillet.id, 'Réservé');
-          setMessage('Ticket réservé avec succès');
-          setMessageColor('green');
-        }
-      } else {
-        createBillet(eventId);
-        setMessage('Ticket créé et réservé avec succès');
-        setMessageColor('green');
-      }
     }
   };
 
   const handlePay = (eventId) => {
     if (!eventId) return;
-    if (!billets) {
+    const existingBillet = billets?.find(billet => billet.epreuve.id === eventId);
+    if (existingBillet) {
+      updateBillet(existingBillet.id, 'Payé');
+      setMessage('Paiement effectué avec succès');
+      setMessageColor('green');
+      setTimeout(() => {
+        setMessage('Redirecting to homepage...');
+        navigate('/');
+      }, 3000);
+    } else {
       setMessage('Aucun billet trouvé');
       setMessageColor('red');
-      return;
     }
-    const existingBillet = billets.find(billet => billet.epreuve.id === eventId);
-    updateBillet(existingBillet.id, 'Payé');
-    setMessage('Paiement effectué avec succès');
-    setMessageColor('green');
-    setTimeout(() => setMessage('Redirecting to homepage...'), 3000);
-    setTimeout(() => navigate('/'), 5000);
   };
 
   const handleInscription = (eventId) => {
@@ -71,16 +67,25 @@ const EventsList = () => {
       setMessageColor('red');
       return;
     }
+
     const maxParticipants = maxParticipantsTable.find(item => item.epreuveId === eventId);
-    if (maxParticipants && maxParticipants.maxParticipants > maxParticipants.nbParticipants) {
+    console.log('Max participants', maxParticipants);
+    
+    if (maxParticipants && maxParticipants.maxParticipants >= maxParticipants.nbParticipants) {
       addInscription(eventId);
       setMessage('Inscription réalisée avec succès');
       setMessageColor('green');
-      updateNbParticipants(eventId, maxParticipantsTable.nbParticipants + 1);
+      updateNbParticipants(eventId, maxParticipants.nbParticipants + 1);
       const eventDate = epreuves.find(epreuve => epreuve.id === eventId).date;
       createResult(eventId, eventDate, localStorage.getItem('userId'), 'En attente', 0);
-    } else {
+    } else if (!maxParticipants) {
+      setMessage('Nombre maximal de participants non défini pour cet événement');
+      setMessageColor('red');
+    } else if (maxParticipants.maxParticipants < maxParticipants.nbParticipants) {
       setMessage('Nombre maximal de participants atteint pour cet événement');
+      setMessageColor('red');
+    } else {
+      setMessage('Erreur lors de l’inscription');
       setMessageColor('red');
     }
   };
@@ -101,7 +106,7 @@ const EventsList = () => {
       </header>
       <h2>Programme des épreuves</h2>
       <p style={{ color: messageColor }}>{message}</p>
-      <table className="events-table">
+      <table>
         <thead>
           <tr>
             <th>ID</th>
@@ -123,26 +128,51 @@ const EventsList = () => {
               <td>
                 {userRole === 'spectateur' && (
                   <>
-                    <button className="action-button" onClick={() => handleReserve(epreuve.id)}>Réserver</button>
-                    <button className="action-button" onClick={() => handlePay(epreuve.id)}>Payer</button>
+                    {!billets || !billets.find(billet => billet.epreuve.id === epreuve.id) ? (
+                      <>
+                        <button className="action-button" style={{ backgroundColor: 'green', color: 'white' }} onClick={() => handleReserve(epreuve.id)}>
+                          Réserver
+                        </button>
+                        <button className="action-button" style={{ backgroundColor: 'blue' }} disabled>
+                          Payer
+                        </button>
+                      </>
+                    ) : (
+                      billets.find(billet => billet.epreuve.id === epreuve.id && billet.etat === 'Réservé') ? (
+                        <>
+                          <button style={{ backgroundColor: '#b3ffb3' }} disabled>
+                            Réservé
+                          </button>
+                          <button style={{ backgroundColor: 'blue', color: 'white' }} onClick={() => handlePay(epreuve.id)}>
+                            Payer
+                          </button>
+                        </>
+                      ) : (
+                        billets.find(billet => billet.epreuve.id === epreuve.id && billet.etat === 'Payé') && (
+                          <p>
+                            Payé
+                          </p>
+                        )
+                      )
+                    )}
                   </>
                 )}
                 {userRole === 'participant' && (
                   <>
-                    {!inscriptions.includes(epreuve.id) && (
+                    {!inscriptions.includes(epreuve.id) ? (
                       <button className="action-button green" onClick={() => handleInscription(epreuve.id)}>
                         S'inscrire
                       </button>
-                    )}
-                    {inscriptions.includes(epreuve.id) && (timeDifference(epreuve.id) > 10) && (
-                      <button className="action-button red" onClick={() => handleDesinscription(epreuve.id)}>
-                        Désinscrire
-                      </button>
-                    )}
-                    {inscriptions.includes(epreuve.id) && (timeDifference(epreuve.id) <= 10) && (
-                      <button className="action-button disabled" disabled>
-                        Désinscrire
-                      </button>
+                    ) : (
+                      timeDifference(epreuve.id) > 10 ? (
+                        <button className="action-button red" onClick={() => handleDesinscription(epreuve.id)}>
+                          Désinscrire
+                        </button>
+                      ) : (
+                        <button className="action-button disabled" disabled>
+                          Désinscrire
+                        </button>
+                      )
                     )}
                   </>
                 )}
