@@ -13,9 +13,9 @@ const AddEvent = () => {
   const [availableSeats, setAvailableSeats] = useState('');
   const navigate = useNavigate();
 
-  const { createEpreuve, infrastructures } = useAuth();
+  const { createEpreuve, infrastructures, getInfrastructures } = useAuth();
   const infrastructure = infrastructures.find(infrastructure => infrastructure.nom === infrastructureName);
-
+  getInfrastructures();
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('Adding event', name, date, time, infrastructure, availableSeats);
