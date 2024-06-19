@@ -40,7 +40,7 @@ const ManageEvents = () => {
 
   const [newDate, setNewDate] = useState('');
   const handleBack = () => {
-    navigate('/organizer-home');
+    navigate('/');
   };
 
   const displayData = (date) => {
