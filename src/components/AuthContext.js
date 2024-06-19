@@ -349,7 +349,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const deleteEpreuve = async (epreuveId) => {
+    console.log('Deleting epreuve', epreuveId);
     const apiUrl = `${apiUrls.epreuves}/${epreuveId}`;
+    console.log('API URL', apiUrl);
     try {
       // Call delete epreuve API endpoint to delete an epreuve
       await axios.delete(apiUrl, {
@@ -357,6 +359,7 @@ export const AuthProvider = ({ children }) => {
           'session-id': sessionID,
         },
       });
+      console.log('Epreuve deleted successfully');
       setEpreuves(epreuves.filter(epreuve => epreuve.id !== epreuveId));
     } catch (error) {
       console.error('Delete epreuve failed:', error.message);
@@ -481,6 +484,33 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Create delegation failed:', error.message);
       // Handle create delegation error
+    }
+  };
+
+  const updateDelegation = async (id, name, goldMedals, silverMedals, bronzeMedals) => {
+    const apiUrl = `http://localhost:8080/api/delegations/${id}`;
+    if (!id) {
+      console.error('Delegation ID is required');
+      return;
+    }
+    // If one field is not provided, keep the existing value
+
+    try {
+      // Call update delegation API endpoint to update a delegation
+      const response = await axios.put(apiUrl, {
+          nom: name || delegation.nom,
+          nombreMedailleOr: goldMedals || delegation.nombreMedailleOr,
+          nombreMedailleArgent: silverMedals || delegation.nombreMedailleArgent,
+          nombreMedailleBronze: bronzeMedals || delegation.nombreMedailleBronze,
+        }, {
+        headers: {
+          'session-id': sessionID,
+        },
+      });
+      setDelegation(response.data);
+    } catch (error) {
+      console.error('Update delegation failed:', error.message);
+      // Handle update delegation error
     }
   };
 
@@ -769,6 +799,7 @@ export const AuthProvider = ({ children }) => {
     removeInscription,
     getDelegations,
     createDelegation,
+    updateDelegation,
     removeDelegation,
     createParticipant,
     applyMaxParticipants,
