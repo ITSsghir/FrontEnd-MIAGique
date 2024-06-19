@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
@@ -5,7 +6,7 @@ import './EventsList.css'; // Ensure the CSS file is correctly linked
 
 const EventsList = () => {
   const navigate = useNavigate();
-  const { epreuves, getEpreuves, billets, createBillet, updateBillet, inscriptions, addInscription, removeInscription, maxParticipantsTable, updateNbParticipants, createResult, deleteResult } = useAuth();
+  const { epreuves, getEpreuves, billets, createBillet, updateBillet, inscriptions, addInscription, removeInscription, maxParticipantsTable, updateNbParticipants, createResult, deleteResult, updateStatistics } = useAuth();
   const [message, setMessage] = useState('');
   const [messageColor, setMessageColor] = useState('green');
   const userRole = localStorage.getItem('userRole');
@@ -49,6 +50,7 @@ const EventsList = () => {
     const existingBillet = billets?.find(billet => billet.epreuve.id === eventId);
     if (existingBillet) {
       updateBillet(existingBillet.id, 'Payé');
+      updateStatistics(existingBillet);
       setMessage('Paiement effectué avec succès');
       setMessageColor('green');
       setTimeout(() => {
@@ -69,8 +71,6 @@ const EventsList = () => {
     }
 
     const maxParticipants = maxParticipantsTable.find(item => item.epreuveId === eventId);
-    console.log('Max participants', maxParticipants);
-    
     if (maxParticipants && maxParticipants.maxParticipants >= maxParticipants.nbParticipants) {
       addInscription(eventId);
       setMessage('Inscription réalisée avec succès');
