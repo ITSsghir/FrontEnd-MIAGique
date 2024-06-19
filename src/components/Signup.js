@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import './Signup.css'; // Import the CSS file for styling
 
 const Signup = () => {
   const [role, setRole] = useState('');
@@ -11,7 +12,7 @@ const Signup = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, sessionID } = useAuth();
 
   const apiUrl = 'http://localhost:8080/register/' + role; 
 
@@ -22,6 +23,12 @@ const Signup = () => {
       console.log('Already logged in');
     }
   }, [navigate]);
+
+  useEffect(() => {
+    if (sessionID) {
+      navigate('/');
+    }
+  }, [sessionID, navigate]);
 
   const handleRoleChange = (e) => {
     setRole(e.target.value);
@@ -67,52 +74,66 @@ const Signup = () => {
 
   return (
     <div className="signup-container">
-      <button style={{float: 'right', backgroundColor: 'black', color: 'white'}} onClick={() => navigate('/results')}>Résultats</button> 
-      <h2>Sign Up</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form>
-        <div>
-          <label>Role:</label>
-          <select value={role} onChange={handleRoleChange} required>
-            <option value="">Select Role</option>
-            <option value="spectateur">Spectateur</option>
-            <option value="organisateur">Organisateur</option>
-          </select>
-        </div>
-        <div>
-          <label>First Name:</label>
-          <input 
-            type="text" 
-            value={firstName} 
-            onChange={(e) => setFirstName(e.target.value)} 
-            required
-          />
-          <label>Last Name:</label>
-          <input 
-            type="text" 
-            value={lastName} 
-            onChange={(e) => setLastName(e.target.value)} 
-            required
-          />
-          <label>Email:</label>
-          <input 
-            type="email" 
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)} 
-            required 
-          />
-        </div>
-        <div>
-          <label>Password:</label>
-          <input 
-            type="password" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
-            required 
-          />
-        </div>
-        <button type="submit" onClick={handleSubmit}>Sign Up</button>
-      </form>
+      <header className="signup-header">
+        <h1>MIAGique</h1>
+      </header>
+      <div className="signup-content">
+        <h2>Sign Up</h2>
+        <button 
+          className="results-button"
+          onClick={() => navigate('/results')}
+        >
+          Résultats
+        </button>
+        {error && <p className="error-message">{error}</p>}
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Role:</label>
+            <select value={role} onChange={handleRoleChange} required>
+              <option value="">Select Role</option>
+              <option value="spectateur">Spectateur</option>
+              <option value="organisateur">Organisateur</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label>First Name:</label>
+            <input 
+              type="text" 
+              value={firstName} 
+              onChange={(e) => setFirstName(e.target.value)} 
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Last Name:</label>
+            <input 
+              type="text" 
+              value={lastName} 
+              onChange={(e) => setLastName(e.target.value)} 
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Email:</label>
+            <input 
+              type="email" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              required 
+            />
+          </div>
+          <div className="form-group">
+            <label>Password:</label>
+            <input 
+              type="password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              required 
+            />
+          </div>
+          <button type="submit" className="signup-button">Sign Up</button>
+        </form>
+      </div>
     </div>
   );
 };

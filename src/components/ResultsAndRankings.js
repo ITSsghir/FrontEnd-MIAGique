@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
+import './ResultsAndRankings.css'; // Ajoutez ceci pour inclure le fichier CSS
 
 const ResultsAndRankings = () => {
   const navigate = useNavigate();
@@ -17,9 +18,13 @@ const ResultsAndRankings = () => {
   }, [navigate]);
 
   return (
-    <div className="container">
+    <div className="results-container">
+      <header className="results-header">
+        <button className="back-button" onClick={() => navigate(-1)}>Retour</button>
+        <h1 className="title">MIAGique</h1>
+      </header>
       <h2>Résultats et Classements</h2>
-      <table>
+      <table className="results-table">
         <thead>
           <tr>
             <th>ID</th>
@@ -30,11 +35,10 @@ const ResultsAndRankings = () => {
           </tr>
         </thead>
         <tbody>
-          {/* Show the delegation */}
           <tr key={delegation.id}>
             <td>{delegation.id}</td>
             <td>{delegation.nom}</td>
-            <td>{delegation.nombreMedailleArgent}</td>
+            <td>{delegation.nombreMedailleOr}</td>
             <td>{delegation.nombreMedailleArgent}</td>
             <td>{delegation.nombreMedailleBronze}</td>
           </tr>

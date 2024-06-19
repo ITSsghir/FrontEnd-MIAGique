@@ -19,12 +19,18 @@ import ManageResults from './ManageResults';
 import './OrganizerHome.css';
 import './ParticipantHome.css';
 import './ControllerHome.css';
+import './SpectatorHome.css';
 
 const Home = () => {
   const navigate = useNavigate();
   const [message, setMessage] = useState('');
   const [activeSection, setActiveSection] = useState('');
   const { logout, deleteAccount, sessionID, userRole, role, billets, updateBillet } = useAuth();
+
+  const handleSectionChange = (section) => {
+    setActiveSection(section);
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to the top of the page smoothly
+  };
 
   const renderMessage = (billet) => {
     if (billet.etat === 'Validé') {
@@ -79,11 +85,7 @@ const Home = () => {
     const localSessionID = localStorage.getItem('sessionID');
     console.log('sessionID:', localSessionID);
     if (!localSessionID) {
-      // Redirect unauthenticated users to login page
       navigate('/login');
-    } else {
-      const userRole = localStorage.getItem('userRole');
-      console.log('User role:', userRole);
     }
   }, [navigate]);
 
@@ -93,7 +95,6 @@ const Home = () => {
       setMessage('Account deleted successfully');
     } catch (error) {
       console.error('Account deletion failed:', error.message);
-      // Handle account deletion error
     }
   };
 
@@ -108,7 +109,6 @@ const Home = () => {
       setMessage('Billet non trouvé');
       return;
     }
-    // Check the ticket status
     const ticket = billets.find(billet => billet.id === billetId);
     if (!ticket) {
       console.error('Ticket not found:', billetId);
@@ -130,41 +130,25 @@ const Home = () => {
     }
 
     try {
-      // Update the ticket status to 'Payé'
       await updateBillet(billetId, 'Validé');
       console.log('Update ticket status to Validé for ticket:', billetId);
       setMessage('Billet validé avec succès');
     }
     catch (error) {
       console.error('Ticket validation failed:', error.message);
-      // Handle ticket validation error
     }
   };
 
   const renderHome = (userRole) => {
     if (!sessionID || !userRole) {
       navigate('/login');
-      return null; // Return null to prevent rendering if navigating
+      return null;
     }
     switch (userRole) {
       case 'spectateur':
         return (
-          <div>
-            <h2>Welcome, Spectator ${}</h2>
-            {message && <p style={{ color: 'green' }}>{message}</p>}
-            <button type="button" className="secondary" onClick={() => navigate('/events-list')}>Consulter le programme des épreuves</button>
-            <button type="button" className="secondary" onClick={() => navigate('/tickets')}>Voir billets</button>
-            <button type="button" className="danger" onClick={handleDeleteAccount}>Supprimer compte</button>
-            <button type="button" className="danger" onClick={handleLogout}>Logout</button>
-          </div>
-        );
-      case 'participant':
-        return (
-          <div className="participant-home">
-            <header className="participant-home-header">
-              <div className="left">
-                <h2>Welcome, Participant</h2>
-              </div>
+          <div className="spectator-home">
+            <header className="spectator-home-header">
               <div className="center">
                 <h1>MIAGique</h1>
               </div>
@@ -172,10 +156,31 @@ const Home = () => {
                 <button className="logout" onClick={handleLogout}>Logout</button>
               </div>
             </header>
-            <main className="participant-home-main">
+            <div className="spectator-home-content">
+              <h2>Welcome, Spectator</h2>
+              {message && <p className="message">{message}</p>}
+              <button type="button" className="secondary" onClick={() => navigate('/events-list')}>Consulter le programme des épreuves</button>
+              <button type="button" className="secondary" onClick={() => navigate('/tickets')}>Voir billets</button>
+              <button type="button" className="danger" onClick={handleDeleteAccount}>Supprimer compte</button>
+            </div>
+          </div>
+        );
+      case 'participant':
+        return (
+          <div className="participant-home">
+            <header className="participant-home-header">
+              <div className="center">
+                <h1>MIAGique</h1>
+              </div>
+              <div className="right">
+                <button className="logout" onClick={handleLogout}>Logout</button>
+              </div>
+            </header>
+            <div className="participant-home-content">
+              <h2>Welcome, Participant</h2>
               <button className="secondary" onClick={() => navigate('/events-list')}>Consulter programme des épreuves</button>
               <button className="secondary" onClick={() => navigate('/results-and-rankings')}>Résultats et classement</button>
-            </main>
+            </div>
           </div>
         );
       case 'organisateur':
@@ -214,12 +219,10 @@ const Home = () => {
                       <td>{billet.spectateur.prenom} {billet.spectateur.nom}</td>
                       <td>{billet.prix}</td>
                       <td>{billet.etat}</td>
-                      
-                      {/* Display Validate button only if ticket status is 'Payé' */}
                       <td>
-                      {billet.etat === 'Payé' && (
-                        <button onClick={() => handleValidateTicket(billet.id)}>Valider</button>
-                      )}
+                        {billet.etat === 'Payé' && (
+                          <button onClick={() => handleValidateTicket(billet.id)}>Valider</button>
+                        )}
                       </td>
                       <td>{renderMessage(billet)}</td>
                     </tr>
@@ -234,7 +237,7 @@ const Home = () => {
             <div className="organizer-home">
               <header className="organizer-home-header">
                 <div className="left">
-                  <h2>Welcome, Organizer</h2>
+                  <h2 style={{color: 'white'}}>Welcome, Organizer</h2>
                 </div>
                 <div className="center">
                   <h1>MIAGique</h1>
@@ -247,39 +250,39 @@ const Home = () => {
                 <aside className="sidebar">
                   <div className="section">
                     <h3>Gestion des délégations</h3>
-                    <button onClick={() => setActiveSection('addDelegation')}>Ajouter des délégations</button>
-                    <button onClick={() => setActiveSection('removeDelegation')}>Enlever des délégations</button>
+                    <button onClick={() => handleSectionChange('addDelegation')}>Ajouter des délégations</button>
+                    <button onClick={() => handleSectionChange('removeDelegation')}>Enlever des délégations</button>
                   </div>
                   <div className="section">
                     <h3>Gestion des participants</h3>
-                    <button onClick={() => setActiveSection('addParticipant')}>Créer participant</button>
-                    <button onClick={() => setActiveSection('maxParticipants')}>Nombre max de participants</button>
-                    <button onClick={() => setActiveSection('manageParticipants')}>Gérer participants</button>
+                    <button onClick={() => handleSectionChange('addParticipant')}>Créer participant</button>
+                    <button onClick={() => handleSectionChange('maxParticipants')}>Nombre max de participants</button>
+                    <button onClick={() => handleSectionChange('manageParticipants')}>Gérer participants</button>
                   </div>
                   <div className="section">
                     <h3>Gestion des Infrastructures d'accueil</h3>
-                    <button onClick={() => setActiveSection('addInfrastructure')}>Ajouter une infrastructure</button>
-                    <button onClick={() => setActiveSection('manageInfrastructure')}>Gérer les infrastructures</button>
+                    <button onClick={() => handleSectionChange('addInfrastructure')}>Ajouter une infrastructure</button>
+                    <button onClick={() => handleSectionChange('manageInfrastructure')}>Gérer les infrastructures</button>
                   </div>
                   <div className="section">
                     <h3>Gestion des épreuves</h3>
-                    <button onClick={() => setActiveSection('addEvent')}>Créer épreuve</button>
-                    <button onClick={() => setActiveSection('maxEvents')}>Modifier Nombre places disponibles des épreuves</button>
-                    <button onClick={() => setActiveSection('manageEvents')}>Gérer le calendrier des épreuves</button>
+                    <button onClick={() => handleSectionChange('addEvent')}>Créer épreuve</button>
+                    <button onClick={() => handleSectionChange('maxEvents')}>Modifier Nombre places disponibles des épreuves</button>
+                    <button onClick={() => handleSectionChange('manageEvents')}>Gérer le calendrier des épreuves</button>
                   </div>
                   <div className="section">
                     <h3>Gérer les contrôleurs</h3>
-                    <button onClick={() => setActiveSection('addController')}>Créer un contrôleur</button>
-                    <button onClick={() => setActiveSection('manageControllers')}>Gérer contrôleurs</button>
+                    <button onClick={() => handleSectionChange('addController')}>Créer un contrôleur</button>
+                    <button onClick={() => handleSectionChange('manageControllers')}>Gérer contrôleurs</button>
                   </div>
                   <div className="section">
                     <h3>Résultats</h3>
-                    <button onClick={() => setActiveSection('addResult')}>Ajouter un résultat</button>
-                    <button onClick={() => setActiveSection('manageResults')}>Gérer les résultats</button>
+                    <button onClick={() => handleSectionChange('addResult')}>Ajouter un résultat</button>
+                    <button onClick={() => handleSectionChange('manageResults')}>Gérer les résultats</button>
                   </div>
                   <div className="section">
                     <h3>Statistiques</h3>
-                    <button onClick={() => setActiveSection('statistics')}>Statistiques</button>
+                    <button onClick={() => handleSectionChange('statistics')}>Statistiques</button>
                   </div>
                 </aside>
                 <main className="main-content">
@@ -290,7 +293,6 @@ const Home = () => {
           );
         }
       default:
-        // Unreachable code, throw an error if userRole is not one of the above
         throw new Error('Invalid user role');
     }
   };
@@ -299,3 +301,4 @@ const Home = () => {
 };
 
 export default Home;
+
