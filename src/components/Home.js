@@ -7,7 +7,7 @@ import AddParticipant from './AddParticipant';
 import MaxParticipants from './MaxParticipants';
 import ManageParticipants from './ManageParticipants';
 import AddEvent from './AddEvent';
-import MaxEvents from './MaxEvents';
+import MaxEventAvailableSeats from './MaxEventAvailableSeats';
 import ManageEvents from './ManageEvents';
 import AddController from './AddController';
 import ManageControllers from './ManageControllers';
@@ -58,8 +58,8 @@ const Home = () => {
         return <ManageParticipants />;
       case 'addEvent':
         return <AddEvent />;
-      case 'maxEvents':
-        return <MaxEvents />;
+      case 'MaxEventAvailableSeats':
+        return <MaxEventAvailableSeats />;
       case 'manageEvents':
         return <ManageEvents />;
       case 'addController':
@@ -267,7 +267,7 @@ const Home = () => {
                   <div className="section">
                     <h3>Gestion des épreuves</h3>
                     <button onClick={() => handleSectionChange('addEvent')}>Créer épreuve</button>
-                    <button onClick={() => handleSectionChange('maxEvents')}>Modifier Nombre places disponibles des épreuves</button>
+                    <button onClick={() => handleSectionChange('MaxEventAvailableSeats')}>Modifier Nombre places disponibles des épreuves</button>
                     <button onClick={() => handleSectionChange('manageEvents')}>Gérer le calendrier des épreuves</button>
                   </div>
                   <div className="section">
