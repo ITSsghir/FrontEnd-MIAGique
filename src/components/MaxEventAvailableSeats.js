@@ -5,7 +5,7 @@ import { useAuth } from './AuthContext';
 const MaxEvents = () => {
   const [message, setMessage] = useState('');
   const [messageColor, setMessageColor] = useState('green');
-  const { epreuves, updateEpreuve } = useAuth();
+  const { epreuves, updateEpreuve, getEpreuves } = useAuth();
   const [epreuveName, setEpreuveName] = useState('');
   const [epreuve, setEpreuve] = useState(null);
   const [availableSeats, setAvailableSeats] = useState(0);
@@ -14,22 +14,22 @@ const MaxEvents = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log('Applying max events', epreuve, epreuve.id, availableSeats);
+      console.log('Updating max available seats', epreuve, epreuve.id, availableSeats);
       const infrastructureCapacity = epreuve.infrastructure.capacite;
       if (availableSeats > infrastructureCapacity) {
-        setMessage('Le nombre maximal d\'épreuves ne peut pas dépasser la capacité de l\'infrastructure');
+        setMessage('Le nombre maximal de places mis en vente ne peut pas dépasser la capacité de l\'infrastructure');
         setMessageColor('red');
         return;
       }
 
       await updateEpreuve(epreuve.id, epreuve.nom, epreuve.date, epreuve.infrastructure, availableSeats);
 
-      setMessage('Nombre maximal d\'épreuves défini avec succès');
+      setMessage('Nombre maximal de places mis à jour avec succès');
       setMessageColor('green');
     }
     catch (error) {
-      console.error('Erreur lors de la définition du nombre maximal d\'épreuves', error);
-      setMessage('Erreur lors de la définition du nombre maximal d\'épreuves');
+      console.error('Erreur lors de la définition du nombre maximal de places', error);
+      setMessage('Erreur lors de la définition du nombre maximal de places: ' + error.message);
       setMessageColor('red');
     }
   };
@@ -43,6 +43,10 @@ const MaxEvents = () => {
       setAvailableSeats(epreuve.nombrePlaces);
     }
   }, [epreuve]);
+
+  useEffect(() => {
+    getEpreuves();
+  }, [getEpreuves]);
 
   return (
     <div className="form-container">
