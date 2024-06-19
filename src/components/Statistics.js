@@ -1,9 +1,19 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 import './Statistics.css';
 
 function Statistics() {
   const { statistics } = useAuth();
+  const [stats, setStats] = useState([]);
+
+  useEffect(() => {
+    const stats = localStorage.getItem('statistics');
+    if (stats) {
+      setStats(JSON.parse(stats));
+    } else {
+      setStats([]);
+    }
+  }, []);
 
   return (
     <div className="statistics-container">
@@ -20,7 +30,7 @@ function Statistics() {
           ) : (
             statistics.map((vente, index) => (
               <li key={index}>
-                le {vente.date} - {vente.prix}€ - Épreuve: {vente.epreuve.nom}
+                <p>{vente.epreuve.nom} - {vente.date} - {vente.prix}€</p>
               </li>
             ))
           )}
