@@ -17,7 +17,10 @@ export const AuthProvider = ({ children }) => {
   const [epreuves, setEpreuves] = useState([]);
   const [maxParticipantsTable, setMaxParticipantsTable] = useState([]);
   const [billets, setBillets] = useState([]);
-  const [AllInscriptions, setAllInscriptions] = useState([]);
+  const [AllInscriptions, setAllInscriptions] = useState(() => {
+    const savedInscriptions = localStorage.getItem('inscriptions');
+    return savedInscriptions ? JSON.parse(savedInscriptions) : [];
+  });
   const [delegation, setDelegation] = useState([]);
   const [delegations, setDelegations] = useState([]);
   const [participants, setParticipants] = useState([]);
@@ -147,6 +150,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('userId');
       localStorage.removeItem('sessionID');
       localStorage.removeItem('userRole');
+      localStorage.removeItem('inscriptions');
     } catch (error) {
       console.error('Logout failed:', error.message);
       // Handle logout error
@@ -182,6 +186,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('userId');
       localStorage.removeItem('sessionID');
       localStorage.removeItem('userRole');
+      localStorage.removeItem('inscriptions');
     } catch (error) {
       console.error('Delete account failed:', error.message);
       // Handle delete account error
@@ -208,7 +213,7 @@ export const AuthProvider = ({ children }) => {
     const apiUrl = 'http://localhost:8080/api/infrastructuresportives';
     try {
       // Call create infrastructure API endpoint to create a new infrastructure
-      const response = await axios.post(apiUrl, {
+      await axios.post(apiUrl, {
           nom: name,
           adresse: location,
           capacite: capacity,
@@ -245,7 +250,7 @@ export const AuthProvider = ({ children }) => {
 
     try {
       // Call update infrastructure API endpoint to update infrastructure details
-      const response = await axios.put(apiUrl, updatedInfrastructure, {
+      await axios.put(apiUrl, updatedInfrastructure, {
         headers: {
           'session-id': sessionID,
         },
@@ -349,7 +354,7 @@ export const AuthProvider = ({ children }) => {
     };
     try {
       // Call update epreuve API endpoint to update epreuve details
-      const response = await axios.put(apiUrl, updatedEpreuve, {
+      await axios.put(apiUrl, updatedEpreuve, {
         headers: {
           'session-id': sessionID,
         },
@@ -400,7 +405,7 @@ export const AuthProvider = ({ children }) => {
     const apiUrl = apiUrls.billets;
     try {
       // Call create billet API endpoint to create a new billet
-      const response = await axios.post(apiUrl, {
+      await axios.post(apiUrl, {
           epreuveId: epreuveId,
           spectateurId: userID,
           etat: 'Réservé',
@@ -438,7 +443,7 @@ export const AuthProvider = ({ children }) => {
           prix: response.data.prix,
           date: new Date(response.data.date).toLocaleString(),
         }
-        setStatistics([...vente]);
+        setStatistics(prevStats => [...prevStats, vente]);
       } else if (etat === 'Annulé') {
         await updateEpreuve(response.data.epreuveId, response.data.epreuve.nom, response.data.epreuve.date, response.data.epreuve.infrastructure, response.data.epreuve.nombrePlaces + 1);
         // Remove the statistics entry for the cancelled ticket
@@ -456,14 +461,18 @@ export const AuthProvider = ({ children }) => {
       epreuveId: epreuveId,
       participantId: userID,
     };
-    setAllInscriptions([...AllInscriptions, inscription]);
+    const newInscriptions = [...AllInscriptions, inscription];
+    setAllInscriptions(newInscriptions);
+    localStorage.setItem('inscriptions', JSON.stringify(newInscriptions));
   }
 
   const removeInscription = (epreuveId) => {
     // Find the inscription with the given epreuveId and participantId in the AllInscriptions array
     const inscriptionDeleted = AllInscriptions.find(inscription => inscription.epreuveId === epreuveId && inscription.participantId === userID);
     // Remove the inscription from the AllInscriptions array
-    setAllInscriptions(AllInscriptions.filter(inscription => inscription !== inscriptionDeleted));
+    const newInscriptions = AllInscriptions.filter(inscription => inscription !== inscriptionDeleted);
+    setAllInscriptions(newInscriptions);
+    localStorage.setItem('inscriptions', JSON.stringify(newInscriptions));
   }
 
   const getUser = async (userId, userrole) => {
@@ -570,7 +579,7 @@ export const AuthProvider = ({ children }) => {
     const apiUrl = 'http://localhost:8080/api/participants';
     try {
       // Call create participant API endpoint to create a new participant
-      const response = await axios.post(apiUrl, {
+      await axios.post(apiUrl, {
           prenom: firstName,
           nom: lastName,
           email: email,
@@ -588,12 +597,35 @@ export const AuthProvider = ({ children }) => {
   };
 
   const applyMaxParticipants = async (epreuveId, maxParticipantsPerEpreuve) => {
-    const maxParticipants = {
-      epreuveId: epreuveId,
-      maxParticipants: maxParticipantsPerEpreuve,
-    };
-    setMaxParticipantsTable([...maxParticipantsTable, maxParticipants]);
-  }
+    const existingMaxParticipants = maxParticipantsTable.find(item => item.epreuveId === epreuveId);
+    if (existingMaxParticipants) {
+      // Update the maxParticipants value for the existing epreuveId
+      existingMaxParticipants.maxParticipants = maxParticipantsPerEpreuve;
+      const updatedTable = maxParticipantsTable.map(item =>
+        item.epreuveId === epreuveId ? existingMaxParticipants : item
+      );
+      setMaxParticipantsTable(updatedTable);
+      localStorage.setItem('maxParticipantsTable', JSON.stringify(updatedTable));
+    } else {
+      const maxParticipants = {
+        epreuveId: epreuveId,
+        maxParticipants: maxParticipantsPerEpreuve,
+        nbParticipants: 0 // Initialize the number of participants to 0
+      };
+      const updatedTable = [...maxParticipantsTable, maxParticipants];
+      setMaxParticipantsTable(updatedTable);
+      localStorage.setItem('maxParticipantsTable', JSON.stringify(updatedTable));
+    }
+  };
+  
+  // Ensure to load the maxParticipantsTable from local storage in AuthProvider
+  useEffect(() => {
+    const storedMaxParticipantsTable = localStorage.getItem('maxParticipantsTable');
+    if (storedMaxParticipantsTable) {
+      setMaxParticipantsTable(JSON.parse(storedMaxParticipantsTable));
+    }
+  }, []);
+  
 
   const updateNbParticipants = async (epreuveId, nbParticipants) => {
     // Find the epreuve with the given ID in the maxParticipantsTable
@@ -624,7 +656,7 @@ export const AuthProvider = ({ children }) => {
     const apiUrl = `http://localhost:8080/api/participants/${id}`;
     try {
       // Call update participant API endpoint to update a participant
-      const response = await axios.put(apiUrl, {
+      await axios.put(apiUrl, {
           prenom: firstName,
           nom: lastName,
           email: email,
@@ -660,7 +692,7 @@ export const AuthProvider = ({ children }) => {
     const apiUrl = 'http://localhost:8080/api/organisateurs';
     try {
       // Call create controller API endpoint to create a new controller
-      const response = await axios.post(apiUrl, {
+      await axios.post(apiUrl, {
           nom: nom,
           prenom: prenom,
           email: email,
@@ -708,6 +740,7 @@ export const AuthProvider = ({ children }) => {
           'session-id': sessionID,
         },
       });
+      // Update the controllers array with the updated controller
       setControleurs(controleurs.map(controller => controller.id === id ? response.data : controller));
     } catch (error) {
       console.error('Update controller failed:', error.message);
@@ -758,6 +791,7 @@ export const AuthProvider = ({ children }) => {
           'session-id': sessionID,
         },
       });
+      setResults([...results, response.data]);
     } catch (error) {
       console.error('Create result failed:', error.message);
       // Handle create result error
@@ -805,11 +839,11 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const getSpectateurs = () => {
+  const getSpectateurs = async () => {
     const apiUrl = 'http://localhost:8080/api/spectateurs';
     try {
       // Call get spectateurs API endpoint to fetch spectateurs
-      const response = axios.get(apiUrl);
+      const response = await axios.get(apiUrl);
       setSpectateurs(response.data);
     } catch (error) {
       console.error('Get spectateurs failed:', error.message);

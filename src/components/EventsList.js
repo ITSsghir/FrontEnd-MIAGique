@@ -1,4 +1,5 @@
-import axios from 'axios';
+// EventsList.js
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
@@ -8,22 +9,23 @@ const EventsList = () => {
   const navigate = useNavigate();
   const { epreuves, getEpreuves, billets, createBillet, updateBillet, AllInscriptions, addInscription, removeInscription, maxParticipantsTable, updateNbParticipants, createResult, deleteResult, updateStatistics, getBillets } = useAuth();
   const [message, setMessage] = useState('');
-  
-  const [inscriptions, setInscriptions] = useState([]);
-  // Parcourir AllInscriptions pour trouver les inscriptions de l'utilisateur connecté (s'il est un participant)
-  useEffect(() => {
-    const userId = localStorage.getItem('userId');
-    const userRole = localStorage.getItem('userRole');
-    if (userId && userRole === 'participant') {
-      const userInscriptions = AllInscriptions.filter(inscription => inscription.participantId === userId);
-      setInscriptions(userInscriptions.map(inscription => inscription.epreuve.id));
-    }
-  }, [AllInscriptions]);
-
   const [messageColor, setMessageColor] = useState('green');
   const userRole = localStorage.getItem('userRole');
-  getEpreuves();
-  getBillets();
+
+  const [inscriptions, setInscriptions] = useState([]);
+
+  useEffect(() => {
+    getEpreuves();
+    getBillets();
+  }, []);
+
+  useEffect(() => {
+    const userId = localStorage.getItem('userId');
+    if (userId && userRole === 'participant') {
+      const userInscriptions = AllInscriptions.filter(inscription => inscription.participantId === userId);
+      setInscriptions(userInscriptions.map(inscription => inscription.epreuveId));
+    }
+  }, [AllInscriptions, userRole]);
 
   const timeDifference = (eventId) => {
     const currentTime = new Date().getTime();
@@ -77,40 +79,30 @@ const EventsList = () => {
   };
 
   const handleInscription = (eventId) => {
-    // Vérifier si l'utilisateur est déjà inscrit pour cet événement (inscriptions is an array of objects containing the IDs of the events the user is registered for)
     if (inscriptions.includes(eventId)) {
-      setMessage('Vous êtes déjà inscrit à cet événement');
+      setMessage('Déjà inscrit pour cet événement');
       setMessageColor('red');
       return;
     }
-    
-
-    const maxParticipants = maxParticipantsTable.find(item => item.epreuveId === eventId);
-    if (maxParticipants && maxParticipants.maxParticipants >= maxParticipants.nbParticipants) {
       addInscription(eventId);
       setMessage('Inscription réalisée avec succès');
       setMessageColor('green');
-      updateNbParticipants(eventId, maxParticipants.nbParticipants + 1);
+      //updateNbParticipants(eventId, maxParticipants.nbParticipants + 1);
       const eventDate = epreuves.find(epreuve => epreuve.id === eventId).date;
-      createResult(eventId, eventDate, localStorage.getItem('userId'), 'En attente', 0);
-    } else if (!maxParticipants) {
-      setMessage('Nombre maximal de participants non défini pour cet événement');
-      setMessageColor('red');
-    } else if (maxParticipants.maxParticipants < maxParticipants.nbParticipants) {
-      setMessage('Nombre maximal de participants atteint pour cet événement');
-      setMessageColor('red');
-    } else {
-      setMessage('Erreur lors de l’inscription');
-      setMessageColor('red');
-    }
+      //createResult(eventId, eventDate, localStorage.getItem('userId'), 'En attente', 0);
   };
 
   const handleDesinscription = (eventId) => {
+    if (!inscriptions.includes(eventId)) {
+      setMessage('Non inscrit pour cet événement');
+      setMessageColor('red');
+      return;
+    }
     removeInscription(eventId);
     setMessage('Désinscription réalisée avec succès');
     setMessageColor('green');
-    updateNbParticipants(eventId, maxParticipantsTable.nbParticipants - 1);
-    deleteResult(eventId, localStorage.getItem('userId'));
+    // updateNbParticipants(eventId, maxParticipantsTable.find(item => item.epreuveId === eventId).nbParticipants - 1);
+    //deleteResult(eventId, localStorage.getItem('userId'));
   };
 
   return (
